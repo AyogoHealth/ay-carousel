@@ -1,0 +1,14 @@
+{
+  "name": "ay-carousel",
+  "version": "0.0.1",
+  "description": "Demo/PoC for different styles of mobile carousels",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Ayogo Health Inc.",
+  "license": "ISC",
+  "devDependencies": {
+    "http-server": "^0.10.0"
+  }
+}

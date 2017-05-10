@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<!-- Copyright 2016 Ayogo Health Inc. -->
+<html>
+  <head>
+    <title>Component Demo</title>
+    <link rel="stylesheet" href="devices.min.css" type="text/css">
+  </head>
+  <body>
+    <div><a href='https://demos.qa.ayogo.ws/'>Back to Component Demos</a></div>
+    <br />
+    <div class="marvel-device ipad silver" style="width: 768px; height: 1024px;">
+      <div class="camera"></div>
+      <div class="screen">
+        <iframe scrolling="no" width="768" height="1024" id='tablet-iframe'></iframe>
+      </div>
+      <div class="home"></div>
+    </div>
+  </body>
+  <style>
+    iframe {
+      overflow: hidden;
+      border: 0;
+    }
+  </style>
+  <script type="text/javascript">
+    var iframe = document.getElementById('tablet-iframe');
+    iframe.src = location.search.replace("?","").split("=")[1];
+  </script>
+</html>
