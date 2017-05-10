@@ -72,8 +72,7 @@ function ondragmove(e) {
   
     const xTranslate = delta.x - offset.x + currentTranslate;
     
-    // TODO: Move into 
-    carousel.setAttribute('style', `transform: translate3d(${xTranslate}px,0px,0px)`);
+    translate(xTranslate, 0, null);
   }
 }
 
@@ -96,6 +95,12 @@ function onclick(e) {
   if(delta.x) {
     e.preventDefault();
   }
+}
+
+function translate(x, length, fn) {
+  carousel.style['transitionTimingFunction'] = fn;
+  carousel.style['transitionDuration'] = `${length}ms`;
+  carousel.style['transform'] = `translate3d(${x}px,0px,0px)`;
 }
 
 init();
