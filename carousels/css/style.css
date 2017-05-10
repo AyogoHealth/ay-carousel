@@ -18,6 +18,7 @@ nav {
   text-align: center;
   color: white;
   font-family: sans-serif;
+  line-height: 50px;
 }
 .card {
   border: 1px solid black;
@@ -28,6 +29,10 @@ nav {
   padding: 10px;
   display: block;
   background: #fff; 
+  text-align: center;
+  line-height: 150px;
+  font-size: 32px;
+  font-family: sans-serif;
 }
 
 .carousel {
