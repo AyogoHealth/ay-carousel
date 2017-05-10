@@ -5,6 +5,10 @@ let startX = 0;
 let delta = {};
 let position;
 let currentTranslate;
+let lastTranslate;
+let cards;
+let cardWidth;
+let index = 0;
 
 function init() {
   carousels = document.getElementsByClassName('carousel');
@@ -14,6 +18,9 @@ function init() {
     carousel.addEventListener('click', onclick);
     carousel.addEventListener('touchstart', ondragstart);
     carousel.addEventListener('mousedown', ondragstart);
+
+    cards = carousel.children;
+    cardWidth = cards[0].offsetWidth + cards[0].offsetLeft;
   }
 }
 
@@ -22,10 +29,10 @@ function ondragstart(e) {
   const {pageX, pageY} = touches;
 
  
-  if(currentTranslate === undefined) {
-    currentTranslate = 0;
+  if(lastTranslate === undefined) {
+    lastTranslate = 0;
   } else {
-    currentTranslate = (delta.x - offset.x + currentTranslate) || 0;
+    lastTranslate = (delta.x - offset.x + lastTranslate) || 0;
   }
   
   offset = {
@@ -70,10 +77,19 @@ function ondragmove(e) {
   if(dragging && offset) {
     e.preventDefault();
   
-    const xTranslate = delta.x - offset.x + currentTranslate;
+    const currentTranslate = delta.x - offset.x + lastTranslate;
     
-    translate(xTranslate, 0, null);
+    translate(currentTranslate, 0, null);
+    
+    index = Math.round((-currentTranslate)/cardWidth);
   }
+}
+
+function move(nextIndex) {
+  nextIndex = Math.min(Math.max(nextIndex, 0), cards.length - 1);
+
+  let nextOffset = Math.min((cards[nextIndex].offsetLeft-10) * -1, 0);
+  translate(nextOffset, 500, 'ease');
 }
 
 function ondragend(e) {
@@ -89,6 +105,7 @@ function ondragend(e) {
   carousel.removeEventListener('mouseleave', ondragend);
 
   dragging = undefined;
+  move(index);
 }
 
 function onclick(e) {
