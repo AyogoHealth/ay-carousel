@@ -28,16 +28,12 @@ function ondragstart(e) {
   const touches =  e.touches ? e.touches[0] : e;
   const {pageX, pageY} = touches;
 
- 
-  if(lastTranslate === undefined) {
-    lastTranslate = 0;
-  } else {
-    lastTranslate = (delta.x - offset.x + lastTranslate) || 0;
-  }
-  
+  lastTranslate = carousel.getBoundingClientRect().left;
+
+  const boundingRect = cards[index].getBoundingClientRect();
   offset = {
-    x: pageX,
-    y: pageY
+    x: pageX - boundingRect.left,
+    y: pageY - boundingRect.top
   };
 
   delta = {};
@@ -76,12 +72,11 @@ function ondragmove(e) {
 
   if(dragging && offset) {
     e.preventDefault();
-  
-    const currentTranslate = delta.x - offset.x + lastTranslate;
     
+    const currentTranslate = delta.x + lastTranslate - offset.x;
     translate(currentTranslate, 0, null);
     
-    index = Math.round((-currentTranslate)/cardWidth);
+    index = Math.min(Math.max(Math.round((-currentTranslate)/cardWidth), 0), cards.length-1);
   }
 }
 
@@ -89,7 +84,11 @@ function move(nextIndex) {
   nextIndex = Math.min(Math.max(nextIndex, 0), cards.length - 1);
 
   let nextOffset = Math.min((cards[nextIndex].offsetLeft-10) * -1, 0);
-  translate(nextOffset, 500, 'ease');
+
+  // http://easings.net/#easeInOutCirc
+  const ease = 'cubic-bezier(0.785, 0.135, 0.15, 0.86)'
+
+  translate(nextOffset, 500, ease);
 }
 
 function ondragend(e) {
