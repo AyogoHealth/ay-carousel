@@ -28,8 +28,6 @@ function ondragstart(e) {
   const touches =  e.touches ? e.touches[0] : e;
   const {pageX, pageY} = touches;
 
-  lastTranslate = carousel.getBoundingClientRect().left;
-
   const boundingRect = cards[index].getBoundingClientRect();
   offset = {
     x: pageX - boundingRect.left,
@@ -42,6 +40,9 @@ function ondragstart(e) {
     x: carousel.offsetLeft,
     y: carousel.offsetTop
   };
+
+  // TODO: figure out why this needs to be subtracted by 70 :s
+  lastTranslate = carousel.getBoundingClientRect().left - 70;
 
   startX = e.pageX;
   dragging = undefined;
@@ -74,6 +75,7 @@ function ondragmove(e) {
     e.preventDefault();
     
     const currentTranslate = delta.x + lastTranslate - offset.x;
+
     translate(currentTranslate, 0, null);
     
     index = Math.min(Math.max(Math.round((-currentTranslate)/cardWidth), 0), cards.length-1);
@@ -83,11 +85,10 @@ function ondragmove(e) {
 function move(nextIndex) {
   nextIndex = Math.min(Math.max(nextIndex, 0), cards.length - 1);
 
-  let nextOffset = Math.min((cards[nextIndex].offsetLeft-10) * -1, 0);
+  let nextOffset = Math.min((cards[nextIndex].offsetLeft-50) * -1, 0);
 
   // http://easings.net/#easeInOutCirc
-  const ease = 'cubic-bezier(0.785, 0.135, 0.15, 0.86)'
-
+  const ease = 'cubic-bezier(0.785, 0.135, 0.15, 0.86)';
   translate(nextOffset, 500, ease);
 }
 
