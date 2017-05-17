@@ -49,8 +49,8 @@ function ondragstart(e) {
     y: carousel.offsetTop
   };
 
-  // TODO: figure out why this needs to be subtracted by 70 :s
-  lastTranslate = carousel.getBoundingClientRect().left - 70;
+  edgeToCardDist = cards[index].getBoundingClientRect().left;
+  lastTranslate = carousel.getBoundingClientRect().left - edgeToCardDist;
 
   startX = e.pageX;
   dragging = undefined;
@@ -90,14 +90,15 @@ function ondragmove(e) {
   }
 }
 
-function move(nextIndex) {
 function move(nextIndex, direction) {
   if(direction) {
     direction == 'right' ? nextIndex = index+1 : nextIndex = index-1;
   }
   nextIndex = Math.min(Math.max(nextIndex, 0), cards.length - 1);
-
-  let nextOffset = Math.min((cards[nextIndex].offsetLeft-50) * -1, 0);
+  index = nextIndex;
+  const containerWidth = carousel.parentElement.offsetWidth;
+  const edgeToCardDist = (containerWidth - cards[index].offsetWidth)/2;
+  let nextOffset = Math.min((cards[nextIndex].offsetLeft- edgeToCardDist) * -1, 0);
 
   // http://easings.net/#easeInOutCirc
   const ease = 'cubic-bezier(0.785, 0.135, 0.15, 0.86)';
