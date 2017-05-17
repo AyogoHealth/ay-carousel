@@ -27,6 +27,9 @@ function init() {
     });
     rescale();
   }
+
+  document.getElementById('right').addEventListener('click', move.bind(this, undefined, 'right'));
+  document.getElementById('left').addEventListener('click', move.bind(this, undefined, 'left'));
 }
 
 function ondragstart(e) {
@@ -88,6 +91,10 @@ function ondragmove(e) {
 }
 
 function move(nextIndex) {
+function move(nextIndex, direction) {
+  if(direction) {
+    direction == 'right' ? nextIndex = index+1 : nextIndex = index-1;
+  }
   nextIndex = Math.min(Math.max(nextIndex, 0), cards.length - 1);
 
   let nextOffset = Math.min((cards[nextIndex].offsetLeft-50) * -1, 0);
