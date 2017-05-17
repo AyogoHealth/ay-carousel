@@ -22,6 +22,9 @@ function init() {
     cards = carousel.children;
     cardWidth = cards[0].offsetWidth + cards[0].offsetLeft;
 
+    carousel.addEventListener('transitionend', function(e) {
+      rescale();
+    });
     rescale();
   }
 }
@@ -119,13 +122,11 @@ function onclick(e) {
 }
 
 function translate(x, length, fn) {
+  carousel.style['transition'] = 'transform';
   carousel.style['transitionTimingFunction'] = fn;
   carousel.style['transitionDuration'] = `${length}ms`;
   carousel.style['transform'] = `translate3d(${x}px,0px,0px)`;
 
-  carousel.addEventListener('transitionend webkitTransitionEnd oTransitionEnd MSTransitionEnd', function(e) {
-    rescale();
-  });
   rescale();
 }
 
@@ -146,10 +147,9 @@ function percentVisible(card) {
 }
 
 function rescale() {
-  // Need to do/calculate resizing for visible card, card before, and card after
-  // Need to make sure 
-  const from = Math.max(index-1 ,0);
-  const to = Math.min(index+1, cards.length-1)
+  // Rescale current card and 2 cards in either direction
+  const from = Math.max(index-2 ,0);
+  const to = Math.min(index+2, cards.length-1)
 
   for(let i = from; i<=to; i++) {
     let scaler = Math.max(percentVisible(cards[i]), 0.8);
