@@ -9,6 +9,7 @@ let lastTranslate;
 let cards;
 let cardWidth;
 let index = 0;
+let snappiness = 40;
 
 function init() {
   carousels = document.getElementsByClassName('carousel');
@@ -85,8 +86,15 @@ function ondragmove(e) {
     const currentTranslate = delta.x + lastTranslate - offset.x;
 
     translate(currentTranslate, 0, null);
-    
-    index = Math.min(Math.max(Math.round((-currentTranslate)/cardWidth), 0), cards.length-1);
+
+    let cardMidpoint = (cards[index].getBoundingClientRect().left + cards[index].getBoundingClientRect().right) / 2;
+    let viewportWidth = window.innerWidth;
+
+    if(cardMidpoint <= 0 + snappiness) {
+      index = Math.min(index+1, cards.length-1);
+    } else if(cardMidpoint > viewportWidth - snappiness) {
+      index = Math.max(index-1, 0);
+    }
   }
 }
 
