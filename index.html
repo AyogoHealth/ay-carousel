@@ -1,15 +1,32 @@
 <!DOCTYPE html>
-<!-- Copyright 2016 Ayogo Health Inc. -->
-<html>
+<html lang="en">
   <head>
-    <title>Component Demos</title>
+    <title></title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="assets/css/reset.css" rel="stylesheet">
+    <link href="dist/style.css" rel="stylesheet">
+    <link href="assets/css/demo.css" rel="stylesheet">
   </head>
   <body>
-    <h1>Demo</h1>
-    <div>
-      <a href="/carousels/index.html">Desktop</a>
-      <a href="mobile.html?demo=/carousels/index.html">Mobile</a>
-      <a href="tablet.html?demo=/carousels/index.html">Tablet</a>
-    </div>
+    <nav><a href="mobile.html">VIEW IN A MOBILE FRAME</a></nav>
+    <main>
+      <section class="carousel">
+        <div class="card">0</div>
+        <div class="card">1</div>
+        <div class="card">2</div>
+        <div class="card">3</div>
+        <div class="card">4</div>
+        <div class="card">5</div>
+        <div class="card">6</div>
+        <div class="card">7</div>
+        <div class="card">8</div>
+      </section>
+      <div class="buttons">
+        <button id="left">LEFT</button>
+        <button id="right">RIGHT</button>
+      </div>
+    </main>
+    <script src="dist/index.js"></script>
   </body>
 </html>

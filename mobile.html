@@ -2,8 +2,8 @@
 <!-- Copyright 2016 Ayogo Health Inc. -->
 <html>
   <head>
-    <title>Component Demo</title>
-    <link rel="stylesheet" href="devices.min.css" type="text/css">
+    <title>Ay-Carousel</title>
+    <link rel="stylesheet" href="assets/css/devices.min.css" type="text/css">
   </head>
   <body>
     <br />
@@ -13,7 +13,8 @@
       <div class="sensor"></div>
       <div class="speaker"></div>
       <div class="screen">
-        <iframe scrolling="yes" width="375" height="667" id='mobile-iframe'></iframe>
+        <iframe scrolling="yes" width="375" height="667" id='mobile-iframe' src='index.html'>
+        </iframe>
       </div>
       <div class="home"></div>
       <div class="bottom-bar"></div>
@@ -29,8 +30,4 @@
       border: 0;
     }
   </style>
-  <script type="text/javascript">
-    var iframe = document.getElementById('mobile-iframe');
-    iframe.src = location.search.replace("?","").split("=")[1];
-  </script>
 </html>

@@ -1,0 +1,21 @@
+body {
+    background: #D1E39F;
+}
+
+main {
+  padding: 0px;
+  margin: 10px;
+}
+
+nav {
+  width: 100%;
+  height: 50px;
+  position: relative;
+  margin: 0 auto;
+  background:white;
+  text-align: center;
+  color: white;
+  font-family: sans-serif;
+  line-height: 50px;
+  border-bottom: 1px solid grey;
+}

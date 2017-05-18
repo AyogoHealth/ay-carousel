@@ -1,15 +1,25 @@
 {
   "name": "ay-carousel",
+  "copyright": "Copyright 2017 Ayogo Health Inc.",
+  "author": "Ayogo Health Inc.",
   "version": "0.0.1",
   "description": "Demo/PoC for different styles of mobile carousels",
-  "main": "index.js",
-  "scripts": {
-    "start": "./node_modules/.bin/http-server",
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "author": "Ayogo Health Inc.",
-  "license": "ISC",
+  "main": "dist/index.js",
   "devDependencies": {
-    "http-server": "^0.10.0"
+    "http-server": "^0.10.0",
+    "rollup": "^0.41.4",
+    "rollup-plugin-cleanup": "^1.0.0",
+    "rollup-plugin-sourcemaps": "^0.4.1",
+    "typescript": "^2.3.1"
+  },
+  "scripts": {
+    "start": "npm run demo & npm run watch",
+    "watch": "tsc -w -p tsconfig.es6.json & tsc -w -p tsconfig.es5.json",
+    "demo": "./node_modules/.bin/http-server",
+    "build:es6": "tsc -p tsconfig.es6.json",
+    "build:es5:base": "tsc -p tsconfig.es5.json",
+    "build:es5": "npm run build:es5:base",
+    "build": "npm run build:es6 && npm run build:es5",
+    "version": "npm run build && git add -A dist dist-es6"
   }
 }
