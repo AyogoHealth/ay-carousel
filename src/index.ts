@@ -77,7 +77,7 @@ class AyCarousel {
     };
 
     if(typeof this.dragging === 'undefined') {
-      this.dragging = !(this.dragging || Math.abs(this.delta.x) < Math.abs(this.delta.y));
+      this.dragging = !(this.dragging || Math.abs(this.delta.x - this.offset.x) < Math.abs(this.delta.y - this.offset.y));
     } else if(!this.dragging) {
       this.dragging = Math.abs(this.delta.x) > Math.abs(this.delta.y);
     }

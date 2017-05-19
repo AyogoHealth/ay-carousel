@@ -50,7 +50,7 @@ class AyCarousel {
             y: pageY - this.position.y
         };
         if (typeof this.dragging === 'undefined') {
-            this.dragging = !(this.dragging || Math.abs(this.delta.x) < Math.abs(this.delta.y));
+            this.dragging = !(this.dragging || Math.abs(this.delta.x - this.offset.x) < Math.abs(this.delta.y - this.offset.y));
         }
         else if (!this.dragging) {
             this.dragging = Math.abs(this.delta.x) > Math.abs(this.delta.y);
@@ -82,7 +82,7 @@ class AyCarousel {
         const edgeToCardDist = (containerWidth - card.offsetWidth) / 2;
         const nextOffset = Math.min((card.offsetLeft - edgeToCardDist + containerMargin) * -1, 0);
         const ease = 'cubic-bezier(0.785, 0.135, 0.15, 0.86)';
-        this.translate(nextOffset, 300, ease);
+        this.translate(nextOffset, 250, ease);
     }
     ondragend(e) {
         this.position = {
