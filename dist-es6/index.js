@@ -1,10 +1,10 @@
 class AyCarousel {
-    constructor() {
+    constructor(carousel) {
         this.startX = 0;
         this.callbacks = {};
         this.index = 0;
         this.SNAPPINESS = 40;
-        this.carousel = document.querySelector('.carousel');
+        this.carousel = carousel;
         this.carousel.addEventListener('click', e => this.onclick(e));
         this.carousel.addEventListener('touchstart', e => this.ondragstart(e));
         this.carousel.addEventListener('mousedown', e => this.ondragstart(e));
@@ -138,5 +138,5 @@ class AyCarousel {
         }
     }
 }
-new AyCarousel();
+new AyCarousel(document.querySelector('.carousel'));
 //# sourceMappingURL=index.js.map

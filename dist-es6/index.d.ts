@@ -12,7 +12,7 @@ declare class AyCarousel {
     index: number;
     carousel: HTMLElement;
     readonly SNAPPINESS: number;
-    constructor();
+    constructor(carousel: HTMLElement);
     ondragstart(e: any): void;
     ondragmove(e: any): void;
     move(nextIndex: any, direction: any): void;

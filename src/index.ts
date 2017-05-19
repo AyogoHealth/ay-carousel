@@ -13,8 +13,8 @@ class AyCarousel {
   carousel : HTMLElement;
   readonly SNAPPINESS : number = 40;
 
-  constructor() {
-    this.carousel = <HTMLElement>document.querySelector('.carousel');
+  constructor(carousel : HTMLElement) {
+    this.carousel = carousel;
     
     this.carousel.addEventListener('click', e => this.onclick(e));
     this.carousel.addEventListener('touchstart', e => this.ondragstart(e));
@@ -190,4 +190,4 @@ class AyCarousel {
     }
   }
 }
-new AyCarousel();
+new AyCarousel(<HTMLElement>document.querySelector('.carousel'));
