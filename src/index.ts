@@ -6,16 +6,12 @@ class AyCarousel {
   position : any;
   currentTranslate : number;
   lastTranslate : number;
-
-
   callbacks : any = {};
-
   cards : HTMLElement[];
   cardWidth : number;
   index : number = 0;
   carousel : HTMLElement;
-
-  SNAPPINESS : number = 40;
+  readonly SNAPPINESS : number = 40;
 
   constructor() {
     this.carousel = <HTMLElement>document.querySelector('.carousel');
@@ -110,9 +106,20 @@ class AyCarousel {
     }
     nextIndex = Math.min(Math.max(nextIndex, 0), this.cards.length - 1);
     this.index = nextIndex;
-    const containerWidth = this.carousel.parentElement.offsetWidth;
-    const edgeToCardDist = (containerWidth - this.cards[this.index].offsetWidth)/2;
-    let nextOffset = Math.min((this.cards[nextIndex].offsetLeft- edgeToCardDist) * -1, 0);
+
+    const container = this.carousel.parentElement;
+    const containerWidth = container.offsetWidth;
+    const containerMargin = parseInt(window.getComputedStyle(container).marginLeft, 0);
+  
+    const card = this.cards[nextIndex];
+
+    // Width of container - Width of card = All the extra space
+    // Divide this by 2 to get desired distance from edge on either side of card
+    const edgeToCardDist = (containerWidth - card.offsetWidth)/2;
+    
+    // Translating to the left of the desired card, minus our desired edge dist
+    // Multiplied by -1 because we are translating to the right
+    const nextOffset = Math.min((card.offsetLeft - edgeToCardDist + containerMargin) * -1, 0);
 
     // http://easings.net/#easeInOutCirc
     const ease = 'cubic-bezier(0.785, 0.135, 0.15, 0.86)';
@@ -175,9 +182,7 @@ class AyCarousel {
     const to = Math.min(this.index+2, this.cards.length-1)
 
     for(let i = from; i<=to; i++) {
-      let scaler = Math.max(this.percentVisible(this.cards[i]), 0.8);
-
-
+      let scaler = Math.max(this.percentVisible(this.cards[i]), 0.9);
 
       this.cards[i].style['transform'] = `scale(${scaler})`;
       this.cards[i].style['transitionTimingFunction'] = 'ease';

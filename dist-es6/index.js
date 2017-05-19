@@ -75,9 +75,12 @@ class AyCarousel {
         }
         nextIndex = Math.min(Math.max(nextIndex, 0), this.cards.length - 1);
         this.index = nextIndex;
-        const containerWidth = this.carousel.parentElement.offsetWidth;
-        const edgeToCardDist = (containerWidth - this.cards[this.index].offsetWidth) / 2;
-        let nextOffset = Math.min((this.cards[nextIndex].offsetLeft - edgeToCardDist) * -1, 0);
+        const container = this.carousel.parentElement;
+        const containerWidth = container.offsetWidth;
+        const containerMargin = parseInt(window.getComputedStyle(container).marginLeft, 0);
+        const card = this.cards[nextIndex];
+        const edgeToCardDist = (containerWidth - card.offsetWidth) / 2;
+        const nextOffset = Math.min((card.offsetLeft - edgeToCardDist + containerMargin) * -1, 0);
         const ease = 'cubic-bezier(0.785, 0.135, 0.15, 0.86)';
         this.translate(nextOffset, 300, ease);
     }
@@ -128,7 +131,7 @@ class AyCarousel {
         const from = Math.max(this.index - 2, 0);
         const to = Math.min(this.index + 2, this.cards.length - 1);
         for (let i = from; i <= to; i++) {
-            let scaler = Math.max(this.percentVisible(this.cards[i]), 0.8);
+            let scaler = Math.max(this.percentVisible(this.cards[i]), 0.9);
             this.cards[i].style['transform'] = `scale(${scaler})`;
             this.cards[i].style['transitionTimingFunction'] = 'ease';
             this.cards[i].style['transitionDuration'] = `250ms`;

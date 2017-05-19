@@ -1,9 +1,10 @@
 body {
     background: #D1E39F;
+    overflow: hidden;
 }
 
 main {
-  padding: 0px;
+  padding: 10px;
   margin: 10px;
 }
 

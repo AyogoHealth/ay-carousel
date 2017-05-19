@@ -11,7 +11,7 @@ declare class AyCarousel {
     cardWidth: number;
     index: number;
     carousel: HTMLElement;
-    SNAPPINESS: number;
+    readonly SNAPPINESS: number;
     constructor();
     ondragstart(e: any): void;
     ondragmove(e: any): void;
