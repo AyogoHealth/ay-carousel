@@ -25,6 +25,21 @@ nav {
   border-bottom: 1px solid grey;
 }
 
+.card {
+  border-radius: 5px;
+  box-shadow: inset 0 0 1px black;
+  margin: 10px -1px;
+  float: left;
+  height: 80vw;
+  width: 80vw;
+  display: block;
+  background: white; 
+  line-height: 150px;
+  font-size: 32px;
+  font-family: sans-serif;
+  text-align: center;
+}
+
 #carousel-2 > .card {
   width: 60vw;
   height: 60vw;
