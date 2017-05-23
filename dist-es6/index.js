@@ -15,8 +15,6 @@ class AyCarousel {
                 this.rescale();
             });
             this.rescale();
-            document.getElementById('right').addEventListener('click', this.snap.bind(this, undefined, 'right'));
-            document.getElementById('left').addEventListener('click', this.snap.bind(this, undefined, 'left'));
         }
     }
     ondragstart(e) {
@@ -57,7 +55,6 @@ class AyCarousel {
     ondragmove(e) {
         const touches = e.touches ? e.touches[0] : e;
         const { pageX, pageY } = touches;
-        console.log(e);
         const move = {
             x: this.startX - pageX,
             y: this.startY - pageY

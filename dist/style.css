@@ -3,3 +3,16 @@
   width: 30000px;
   display: inline-block;
 }
+
+.progress-dots  {
+  text-align: center;
+}
+
+.progress-dots > li {
+  border-radius: 50%;
+  background: white;
+}
+
+.progress-dots > li.active {
+  background: #45a2e2;
+}
