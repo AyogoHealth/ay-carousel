@@ -1,6 +1,10 @@
 body {
     background: #D1E39F;
-    overflow-x: hidden;
+}
+
+.page-wrapper {
+  overflow: hidden;
+  overflow-y: scroll;
 }
 
 main {
@@ -19,4 +23,9 @@ nav {
   font-family: sans-serif;
   line-height: 50px;
   border-bottom: 1px solid grey;
+}
+
+#carousel-2 > .card {
+  width: 60vw;
+  height: 60vw;
 }

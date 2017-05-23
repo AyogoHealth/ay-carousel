@@ -2,6 +2,7 @@ declare class AyCarousel {
     dragging: boolean;
     offset: any;
     startX: number;
+    startY: number;
     delta: any;
     position: any;
     currentTranslate: number;
@@ -12,12 +13,13 @@ declare class AyCarousel {
     index: number;
     carousel: HTMLElement;
     readonly SNAPPINESS: number;
+    totalMove: any;
+    lastPos: any;
     constructor(carousel: HTMLElement);
     ondragstart(e: any): void;
     ondragmove(e: any): void;
-    move(nextIndex: any, direction: any): void;
+    snap(nextIndex: any, direction: any): void;
     ondragend(e: any): void;
-    onclick(e: any): void;
     translate(x: any, length: any, fn: any): void;
     percentVisible(card: any): number;
     rescale(): void;

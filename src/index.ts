@@ -2,6 +2,7 @@ class AyCarousel {
   dragging : boolean;
   offset : any;
   startX : number = 0;
+  startY : number = 0;
   delta : any;
   position : any;
   currentTranslate : number;
@@ -12,25 +13,28 @@ class AyCarousel {
   index : number = 0;
   carousel : HTMLElement;
   readonly SNAPPINESS : number = 40;
+  totalMove : any;
+  lastPos : any;
 
   constructor(carousel : HTMLElement) {
-    this.carousel = carousel;
-    
-    this.carousel.addEventListener('click', e => this.onclick(e));
-    this.carousel.addEventListener('touchstart', e => this.ondragstart(e));
-    this.carousel.addEventListener('mousedown', e => this.ondragstart(e));
+    if(carousel) {
+      this.carousel = carousel;
+      
+      this.carousel.addEventListener('touchstart', e => this.ondragstart(e));
+      this.carousel.addEventListener('mousedown', e => this.ondragstart(e));
 
-    this.cards = <any>this.carousel.children;
+      this.cards = <any>this.carousel.children;
 
-    this.cardWidth = this.cards[0].offsetWidth + this.cards[0].offsetLeft;
+      this.cardWidth = this.cards[0].offsetWidth + this.cards[0].offsetLeft;
 
-    this.carousel.addEventListener('transitionend', () => {
+      this.carousel.addEventListener('transitionend', () => {
+        this.rescale();
+      });
       this.rescale();
-    });
-    this.rescale();
-    
-    document.getElementById('right').addEventListener('click', this.move.bind(this, undefined, 'right'));
-    document.getElementById('left').addEventListener('click', this.move.bind(this, undefined, 'left'));   
+      
+      document.getElementById('right').addEventListener('click', this.snap.bind(this, undefined, 'right'));
+      document.getElementById('left').addEventListener('click', this.snap.bind(this, undefined, 'left')); 
+    } 
   }
 
   ondragstart(e) {
@@ -53,11 +57,24 @@ class AyCarousel {
     let edgeToCardDist = this.cards[this.index].getBoundingClientRect().left;
     this.lastTranslate = this.carousel.getBoundingClientRect().left - edgeToCardDist;
 
-    this.startX = e.pageX;
+    this.totalMove = 
+    this.startX = pageX;
+    this.startY = pageY;
+
     this.dragging = undefined;
 
     this.callbacks.onmove = e => this.ondragmove(e);
     this.callbacks.onend = e => this.ondragend(e);
+
+    this.totalMove = {
+      x: 0,
+      y: 0
+    }
+
+    this.lastPos = {
+      x: 0,
+      y: 0
+    }
     
     this.carousel.addEventListener('mousemove', this.callbacks.onmove);
     this.carousel.addEventListener('touchmove', this.callbacks.onmove);
@@ -71,20 +88,30 @@ class AyCarousel {
     const touches =  e.touches ? e.touches[0] : e;
     const {pageX, pageY} = touches;
 
-    this.delta = {
-      x: pageX - this.position.x,
-      y: pageY - this.position.y
-    };
-
-    if(typeof this.dragging === 'undefined') {
-      this.dragging = !(this.dragging || Math.abs(this.delta.x - this.offset.x) < Math.abs(this.delta.y - this.offset.y));
-    } else if(!this.dragging) {
-      this.dragging = Math.abs(this.delta.x) > Math.abs(this.delta.y);
+    const move = {
+      x: this.startX - pageX,
+      y: this.startY - pageY
     }
 
-    if(this.dragging && this.offset) {
+    // Keep track of the total distance moved right/left in the move
+    this.totalMove.x += Math.abs(move.x - this.lastPos.x);
+    this.totalMove.y += Math.abs(move.y - this.lastPos.y);
+    
+    this.lastPos = {
+      x: move.x,
+      y: move.y
+    };
+
+    if(this.totalMove.x < 10 && this.totalMove.y < 10) {
+      return;
+    }
+
+    if(this.totalMove.x > this.totalMove.y) {
       e.preventDefault();
-      
+      this.delta = {
+        x: pageX - this.position.x,
+        y: pageY - this.position.y
+      };
       const currentTranslate = this.delta.x + this.lastTranslate - this.offset.x;
 
       this.translate(currentTranslate, 0, null);
@@ -93,14 +120,16 @@ class AyCarousel {
       let viewportWidth = window.innerWidth;
 
       if(cardMidpoint <= 0 + this.SNAPPINESS) {
+        // If card midpoint is close enough to left edge, decrement index
         this.index = Math.min(this.index+1, this.cards.length-1);
       } else if(cardMidpoint > viewportWidth - this.SNAPPINESS) {
+        // If card midpoint is close enough to right edge, increment index
         this.index = Math.max(this.index-1, 0);
       }
     }
   }
 
-  move(nextIndex, direction) {
+  snap(nextIndex, direction) {
     if(direction) {
       direction == 'right' ? nextIndex = this.index+1 : nextIndex = this.index-1;
     }
@@ -123,7 +152,7 @@ class AyCarousel {
 
     // http://easings.net/#easeInOutCirc
     const ease = 'cubic-bezier(0.785, 0.135, 0.15, 0.86)';
-    this.translate(nextOffset, 300, ease);
+    this.translate(nextOffset, 250, ease);
   }
 
   ondragend(e) {
@@ -132,6 +161,10 @@ class AyCarousel {
       y: e.target.offsetTop
     };
 
+    this.totalMove = {
+      x: 0,
+      y: 0
+    };
     this.carousel.removeEventListener('mousemove', this.callbacks.onmove);
     this.carousel.removeEventListener('touchmove', this.callbacks.onmove);
     
@@ -140,15 +173,11 @@ class AyCarousel {
     this.carousel.removeEventListener('mouseleave', this.callbacks.onend);
 
     this.dragging = undefined;
-    this.move(this.index, undefined);
+
+    // Snap to index, which has been set to the nearest card
+    this.snap(this.index, undefined);
 
     this.rescale();
-  }
-
-  onclick(e) {
-    if(this.delta.x) {
-      e.preventDefault();
-    }
   }
 
   translate(x, length, fn) {
@@ -190,4 +219,5 @@ class AyCarousel {
     }
   }
 }
-new AyCarousel(<HTMLElement>document.querySelector('.carousel'));
+new AyCarousel(<HTMLElement>document.querySelector('#carousel-1'));
+new AyCarousel(<HTMLElement>document.querySelector('#carousel-2'));

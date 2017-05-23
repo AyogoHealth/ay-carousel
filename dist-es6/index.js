@@ -1,21 +1,23 @@
 class AyCarousel {
     constructor(carousel) {
         this.startX = 0;
+        this.startY = 0;
         this.callbacks = {};
         this.index = 0;
         this.SNAPPINESS = 40;
-        this.carousel = carousel;
-        this.carousel.addEventListener('click', e => this.onclick(e));
-        this.carousel.addEventListener('touchstart', e => this.ondragstart(e));
-        this.carousel.addEventListener('mousedown', e => this.ondragstart(e));
-        this.cards = this.carousel.children;
-        this.cardWidth = this.cards[0].offsetWidth + this.cards[0].offsetLeft;
-        this.carousel.addEventListener('transitionend', () => {
+        if (carousel) {
+            this.carousel = carousel;
+            this.carousel.addEventListener('touchstart', e => this.ondragstart(e));
+            this.carousel.addEventListener('mousedown', e => this.ondragstart(e));
+            this.cards = this.carousel.children;
+            this.cardWidth = this.cards[0].offsetWidth + this.cards[0].offsetLeft;
+            this.carousel.addEventListener('transitionend', () => {
+                this.rescale();
+            });
             this.rescale();
-        });
-        this.rescale();
-        document.getElementById('right').addEventListener('click', this.move.bind(this, undefined, 'right'));
-        document.getElementById('left').addEventListener('click', this.move.bind(this, undefined, 'left'));
+            document.getElementById('right').addEventListener('click', this.snap.bind(this, undefined, 'right'));
+            document.getElementById('left').addEventListener('click', this.snap.bind(this, undefined, 'left'));
+        }
     }
     ondragstart(e) {
         const touches = e.touches ? e.touches[0] : e;
@@ -32,10 +34,20 @@ class AyCarousel {
         };
         let edgeToCardDist = this.cards[this.index].getBoundingClientRect().left;
         this.lastTranslate = this.carousel.getBoundingClientRect().left - edgeToCardDist;
-        this.startX = e.pageX;
+        this.totalMove =
+            this.startX = pageX;
+        this.startY = pageY;
         this.dragging = undefined;
         this.callbacks.onmove = e => this.ondragmove(e);
         this.callbacks.onend = e => this.ondragend(e);
+        this.totalMove = {
+            x: 0,
+            y: 0
+        };
+        this.lastPos = {
+            x: 0,
+            y: 0
+        };
         this.carousel.addEventListener('mousemove', this.callbacks.onmove);
         this.carousel.addEventListener('touchmove', this.callbacks.onmove);
         this.carousel.addEventListener('touchend', this.callbacks.onend);
@@ -45,18 +57,25 @@ class AyCarousel {
     ondragmove(e) {
         const touches = e.touches ? e.touches[0] : e;
         const { pageX, pageY } = touches;
-        this.delta = {
-            x: pageX - this.position.x,
-            y: pageY - this.position.y
+        const move = {
+            x: this.startX - pageX,
+            y: this.startY - pageY
         };
-        if (typeof this.dragging === 'undefined') {
-            this.dragging = !(this.dragging || Math.abs(this.delta.x - this.offset.x) < Math.abs(this.delta.y - this.offset.y));
+        this.totalMove.x += Math.abs(move.x - this.lastPos.x);
+        this.totalMove.y += Math.abs(move.y - this.lastPos.y);
+        this.lastPos = {
+            x: move.x,
+            y: move.y
+        };
+        if (this.totalMove.x < 10 && this.totalMove.y < 10) {
+            return;
         }
-        else if (!this.dragging) {
-            this.dragging = Math.abs(this.delta.x) > Math.abs(this.delta.y);
-        }
-        if (this.dragging && this.offset) {
+        if (this.totalMove.x > this.totalMove.y) {
             e.preventDefault();
+            this.delta = {
+                x: pageX - this.position.x,
+                y: pageY - this.position.y
+            };
             const currentTranslate = this.delta.x + this.lastTranslate - this.offset.x;
             this.translate(currentTranslate, 0, null);
             let cardMidpoint = (this.cards[this.index].getBoundingClientRect().left + this.cards[this.index].getBoundingClientRect().right) / 2;
@@ -69,7 +88,7 @@ class AyCarousel {
             }
         }
     }
-    move(nextIndex, direction) {
+    snap(nextIndex, direction) {
         if (direction) {
             direction == 'right' ? nextIndex = this.index + 1 : nextIndex = this.index - 1;
         }
@@ -89,19 +108,18 @@ class AyCarousel {
             x: e.target.offsetLeft,
             y: e.target.offsetTop
         };
+        this.totalMove = {
+            x: 0,
+            y: 0
+        };
         this.carousel.removeEventListener('mousemove', this.callbacks.onmove);
         this.carousel.removeEventListener('touchmove', this.callbacks.onmove);
         this.carousel.removeEventListener('touchend', this.callbacks.onend);
         this.carousel.removeEventListener('mouseup', this.callbacks.onend);
         this.carousel.removeEventListener('mouseleave', this.callbacks.onend);
         this.dragging = undefined;
-        this.move(this.index, undefined);
+        this.snap(this.index, undefined);
         this.rescale();
-    }
-    onclick(e) {
-        if (this.delta.x) {
-            e.preventDefault();
-        }
     }
     translate(x, length, fn) {
         this.carousel.style['transition'] = 'transform';
@@ -138,5 +156,6 @@ class AyCarousel {
         }
     }
 }
-new AyCarousel(document.querySelector('.carousel'));
+new AyCarousel(document.querySelector('#carousel-1'));
+new AyCarousel(document.querySelector('#carousel-2'));
 //# sourceMappingURL=index.js.map
