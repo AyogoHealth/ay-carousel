@@ -6,11 +6,16 @@
 
 .progress-dots  {
   text-align: center;
+  list-style: none;
 }
 
 .progress-dots > li {
   border-radius: 50%;
   background: white;
+  display: inline-block;
+  margin: 0 3px;
+  width: 10px;
+  height: 10px;
 }
 
 .progress-dots > li.active {

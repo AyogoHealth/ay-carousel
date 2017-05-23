@@ -15,9 +15,12 @@ declare class AyCarousel {
     readonly SNAPPINESS: number;
     totalMove: any;
     lastPos: any;
-    constructor(carousel: HTMLElement);
+    dots: HTMLElement[];
+    constructor(container: HTMLElement);
     ondragstart(e: any): void;
     ondragmove(e: any): void;
+    ondotclick(e: any, i: any): void;
+    setIndex(index: number): void;
     snap(nextIndex?: number, direction?: string): void;
     ondragend(e: any): void;
     translate(x: number, length: number, fn: string): void;

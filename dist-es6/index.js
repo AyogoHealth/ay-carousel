@@ -1,10 +1,13 @@
 class AyCarousel {
-    constructor(carousel) {
+    constructor(container) {
         this.startX = 0;
         this.startY = 0;
         this.callbacks = {};
         this.index = 0;
         this.SNAPPINESS = 40;
+        this.dots = [];
+        const carousel = container.querySelector('.carousel');
+        const dots = container.querySelector('.progress-dots');
         if (carousel) {
             this.carousel = carousel;
             this.carousel.addEventListener('touchstart', e => this.ondragstart(e));
@@ -15,6 +18,16 @@ class AyCarousel {
                 this.rescale();
             });
             this.rescale();
+        }
+        if (dots) {
+            for (let i = 0; i < this.cards.length; i++) {
+                this.dots.push(document.createElement('li'));
+                dots.insertAdjacentElement('beforeend', this.dots[i]);
+                this.dots[i].addEventListener('touchstart', e => this.ondotclick(e, i));
+                this.dots[i].addEventListener('click', e => this.ondotclick(e, i));
+                this.dots[i].tabIndex = i + 1;
+            }
+            this.dots[this.index].className = 'active';
         }
     }
     ondragstart(e) {
@@ -79,11 +92,23 @@ class AyCarousel {
             let cardMidpoint = (this.cards[this.index].getBoundingClientRect().left + this.cards[this.index].getBoundingClientRect().right) / 2;
             let viewportWidth = window.innerWidth;
             if (cardMidpoint <= 0 + this.SNAPPINESS) {
-                this.index = Math.min(this.index + 1, this.cards.length - 1);
+                this.setIndex(this.index + 1);
             }
             else if (cardMidpoint > viewportWidth - this.SNAPPINESS) {
-                this.index = Math.max(this.index - 1, 0);
+                this.setIndex(this.index - 1);
             }
+        }
+    }
+    ondotclick(e, i) {
+        this.setIndex(i);
+        this.snap(this.index);
+    }
+    setIndex(index) {
+        const oldIndex = this.index;
+        this.index = Math.max(Math.min(index, this.cards.length - 1), 0);
+        if (oldIndex !== this.index) {
+            this.dots[oldIndex].className = '';
+            this.dots[this.index].className = 'active';
         }
     }
     snap(nextIndex, direction) {
@@ -154,6 +179,5 @@ class AyCarousel {
         }
     }
 }
-new AyCarousel(document.querySelector('#carousel-1'));
-new AyCarousel(document.querySelector('#carousel-2'));
+new AyCarousel(document.querySelector('.container'));
 //# sourceMappingURL=index.js.map

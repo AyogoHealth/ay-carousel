@@ -15,8 +15,11 @@ class AyCarousel {
   readonly SNAPPINESS : number = 40;
   totalMove : any;
   lastPos : any;
+  dots : HTMLElement[] = [];
 
-  constructor(carousel : HTMLElement) {
+  constructor(container : HTMLElement) {
+    const carousel = <HTMLElement>container.querySelector('.carousel');
+    const dots = <HTMLElement>container.querySelector('.progress-dots');
     if(carousel) {
       this.carousel = carousel;
       
@@ -31,6 +34,17 @@ class AyCarousel {
         this.rescale();
       });
       this.rescale();
+    }
+
+    if(dots) {
+      for(let i = 0; i < this.cards.length; i++) {
+        this.dots.push(document.createElement('li'));
+        dots.insertAdjacentElement('beforeend', this.dots[i]);
+        this.dots[i].addEventListener('touchstart', e => this.ondotclick(e, i));
+        this.dots[i].addEventListener('click', e => this.ondotclick(e, i));
+        this.dots[i].tabIndex = i+1;
+      }
+      this.dots[this.index].className = 'active';
     } 
   }
 
@@ -117,11 +131,29 @@ class AyCarousel {
 
       if(cardMidpoint <= 0 + this.SNAPPINESS) {
         // If card midpoint is close enough to left edge, decrement index
-        this.index = Math.min(this.index+1, this.cards.length-1);
+        this.setIndex(this.index+1);
       } else if(cardMidpoint > viewportWidth - this.SNAPPINESS) {
         // If card midpoint is close enough to right edge, increment index
-        this.index = Math.max(this.index-1, 0);
+        this.setIndex(this.index-1);
       }
+    }
+  }
+
+  ondotclick(e, i) {
+    this.setIndex(i);
+    this.snap(this.index);
+  }
+
+  setIndex(index: number) {
+    const oldIndex = this.index;
+    
+    // Don't let index go outside bounds
+    this.index = Math.max(Math.min(index, this.cards.length-1), 0);
+
+    // Update dots, TODO: animate this
+    if(oldIndex !== this.index) {
+      this.dots[oldIndex].className = '';
+      this.dots[this.index].className = 'active';
     }
   }
 
@@ -215,5 +247,4 @@ class AyCarousel {
     }
   }
 }
-new AyCarousel(<HTMLElement>document.querySelector('#carousel-1'));
-new AyCarousel(<HTMLElement>document.querySelector('#carousel-2'));
+new AyCarousel(<HTMLElement>document.querySelector('.container'));
