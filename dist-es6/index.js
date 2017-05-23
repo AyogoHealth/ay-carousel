@@ -57,6 +57,7 @@ class AyCarousel {
     ondragmove(e) {
         const touches = e.touches ? e.touches[0] : e;
         const { pageX, pageY } = touches;
+        console.log(e);
         const move = {
             x: this.startX - pageX,
             y: this.startY - pageY

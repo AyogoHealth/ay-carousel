@@ -87,7 +87,7 @@ class AyCarousel {
   ondragmove(e) {
     const touches =  e.touches ? e.touches[0] : e;
     const {pageX, pageY} = touches;
-
+    console.log(e);
     const move = {
       x: this.startX - pageX,
       y: this.startY - pageY
@@ -129,7 +129,7 @@ class AyCarousel {
     }
   }
 
-  snap(nextIndex, direction) {
+  snap(nextIndex? : number, direction? : string) {
     if(direction) {
       direction == 'right' ? nextIndex = this.index+1 : nextIndex = this.index-1;
     }
@@ -180,7 +180,7 @@ class AyCarousel {
     this.rescale();
   }
 
-  translate(x, length, fn) {
+  translate(x : number, length : number, fn : string) {
     this.carousel.style['transition'] = 'transform';
     this.carousel.style['transitionTimingFunction'] = fn;
     this.carousel.style['transitionDuration'] = `${length}ms`;
@@ -189,7 +189,7 @@ class AyCarousel {
     this.rescale();
   }
 
-  percentVisible(card) {
+  percentVisible(card : HTMLElement) {
     let cardRect = card.getBoundingClientRect();
     let cardWidth = card.offsetWidth;
     let frameWidth = window.innerWidth;

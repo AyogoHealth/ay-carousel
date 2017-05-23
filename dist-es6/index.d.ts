@@ -18,9 +18,9 @@ declare class AyCarousel {
     constructor(carousel: HTMLElement);
     ondragstart(e: any): void;
     ondragmove(e: any): void;
-    snap(nextIndex: any, direction: any): void;
+    snap(nextIndex?: number, direction?: string): void;
     ondragend(e: any): void;
-    translate(x: any, length: any, fn: any): void;
-    percentVisible(card: any): number;
+    translate(x: number, length: number, fn: string): void;
+    percentVisible(card: HTMLElement): number;
     rescale(): void;
 }
