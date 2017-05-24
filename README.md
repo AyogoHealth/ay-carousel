@@ -10,4 +10,3 @@ Features
 --------
 
 * Smooth animation on desktop and mobile
-* Works in Chrome, and Firefox right now

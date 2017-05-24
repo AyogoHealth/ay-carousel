@@ -1,13 +1,11 @@
 class AyCarousel {
-    constructor(container) {
+    constructor(carousel) {
         this.startX = 0;
         this.startY = 0;
         this.callbacks = {};
         this.index = 0;
         this.SNAPPINESS = 40;
         this.dots = [];
-        const carousel = container.querySelector('.carousel');
-        const dots = container.querySelector('.progress-dots');
         if (carousel) {
             this.carousel = carousel;
             this.carousel.addEventListener('touchstart', e => this.ondragstart(e));
@@ -19,16 +17,17 @@ class AyCarousel {
             });
             this.rescale();
         }
-        if (dots) {
-            for (let i = 0; i < this.cards.length; i++) {
-                this.dots.push(document.createElement('li'));
-                dots.insertAdjacentElement('beforeend', this.dots[i]);
-                this.dots[i].addEventListener('touchstart', e => this.ondotclick(e, i));
-                this.dots[i].addEventListener('click', e => this.ondotclick(e, i));
-                this.dots[i].tabIndex = i + 1;
-            }
-            this.dots[this.index].className = 'active';
+        let dotContainer = document.createElement('ul');
+        dotContainer.classList.add('progress-dots');
+        this.carousel.parentElement.insertBefore(dotContainer, this.carousel.nextSibling);
+        for (let i = 0; i < this.cards.length; i++) {
+            this.dots.push(document.createElement('li'));
+            dotContainer.insertAdjacentElement('beforeend', this.dots[i]);
+            this.dots[i].addEventListener('touchstart', _ => this.ondotclick(i));
+            this.dots[i].addEventListener('click', _ => this.ondotclick(i));
+            this.dots[i].tabIndex = i + 1;
         }
+        this.dots[this.index].className = 'active';
     }
     ondragstart(e) {
         const touches = e.touches ? e.touches[0] : e;
@@ -99,7 +98,7 @@ class AyCarousel {
             }
         }
     }
-    ondotclick(e, i) {
+    ondotclick(i) {
         this.setIndex(i);
         this.snap(this.index);
     }
@@ -179,5 +178,5 @@ class AyCarousel {
         }
     }
 }
-new AyCarousel(document.querySelector('.container'));
+new AyCarousel(document.querySelector('.carousel'));
 //# sourceMappingURL=index.js.map
