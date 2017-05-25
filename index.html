@@ -5,14 +5,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1 maximum-scale=1 minimum-scale=1 user-scalable=no">
     <link href="assets/css/reset.css" rel="stylesheet">
-    <link href="dist/style.css" rel="stylesheet">
     <link href="assets/css/demo.css" rel="stylesheet">
+    <script src="dist/index.js"></script>
   </head>
   <body>
     <nav><a href="mobile.html">VIEW IN A MOBILE FRAME</a></nav>
     <div class="page-wrapper">
       <main>
-        <section class="carousel">
+        <section id="carousel">
           <div class="card">0</div>
           <div class="card">1</div>
           <div class="card">2</div>
@@ -25,6 +25,9 @@
         </section>
       </main>
     </div>
-    <script src="dist/index.js"></script>
+    <script>
+      var carousel = document.getElementById('carousel');
+      new Carousel(carousel);
+    </script>
   </body>
 </html>

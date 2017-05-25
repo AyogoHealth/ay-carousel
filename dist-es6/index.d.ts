@@ -1,5 +1,4 @@
-declare class AyCarousel {
-    dragging: boolean;
+export default class AyCarousel {
     offset: any;
     startX: number;
     startY: number;
@@ -23,7 +22,7 @@ declare class AyCarousel {
     setIndex(index: number): void;
     snap(nextIndex?: number, direction?: string): void;
     ondragend(e: any): void;
-    translate(x: number, length: number, fn: string): void;
+    translate(x: number, length: number, fn?: string): void;
     percentVisible(card: HTMLElement): number;
     rescale(): void;
 }

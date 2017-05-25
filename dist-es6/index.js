@@ -1,4 +1,4 @@
-class AyCarousel {
+export default class AyCarousel {
     constructor(carousel) {
         this.startX = 0;
         this.startY = 0;
@@ -6,8 +6,59 @@ class AyCarousel {
         this.index = 0;
         this.SNAPPINESS = 40;
         this.dots = [];
+        let CAROUSEL_STYLES = `
+    .progress-dots  {
+      text-align: center;
+      list-style: none;
+    }
+
+    .progress-dots > li {
+      border-radius: 50%;
+      background: white;
+      display: inline-block;
+      margin: 0 3px;
+      width: 10px;
+      height: 10px;
+      border: 1px solid black;
+    }
+
+    .progress-dots > li.active {
+      background: #45a2e2;
+    }
+
+    .card {
+      border-radius: 5px;
+      box-shadow: inset 0 0 1px black;
+      margin: 10px -1px;
+      float: left;
+      height: 80vw;
+      width: 80vw;
+      display: block;
+      background: white; 
+      line-height: 150px;
+      font-size: 32px;
+      font-family: sans-serif;
+      text-align: center;
+    }
+    `;
+        let carStyle = document.createElement('style');
+        carStyle.appendChild(document.createTextNode(CAROUSEL_STYLES));
+        let insertPoint;
+        if (insertPoint = document.querySelector('link')) {
+            insertPoint.parentNode.insertBefore(carStyle, insertPoint);
+        }
+        else if (insertPoint = document.querySelector('style')) {
+            insertPoint.parentNode.insertBefore(carStyle, insertPoint);
+        }
+        else if (insertPoint = document.querySelector('head')) {
+            insertPoint.appendChild(carStyle);
+        }
+        else {
+            document.appendChild(carStyle);
+        }
         if (carousel) {
             this.carousel = carousel;
+            this.carousel.setAttribute('style', `position: relative; width: 30000px; display: inline-block;`);
             this.carousel.addEventListener('touchstart', e => this.ondragstart(e));
             this.carousel.addEventListener('mousedown', e => this.ondragstart(e));
             this.cards = this.carousel.children;
@@ -16,18 +67,20 @@ class AyCarousel {
                 this.rescale();
             });
             this.rescale();
+            let dotContainer = document.createElement('ul');
+            dotContainer.classList.add('progress-dots');
+            if (this.carousel.parentElement) {
+                this.carousel.parentElement.insertBefore(dotContainer, this.carousel.nextSibling);
+            }
+            for (let i = 0; i < this.cards.length; i++) {
+                this.dots.push(document.createElement('li'));
+                dotContainer.insertAdjacentElement('beforeend', this.dots[i]);
+                this.dots[i].addEventListener('touchstart', _ => this.ondotclick(i));
+                this.dots[i].addEventListener('click', _ => this.ondotclick(i));
+                this.dots[i].tabIndex = i + 1;
+            }
+            this.dots[this.index].className = 'active';
         }
-        let dotContainer = document.createElement('ul');
-        dotContainer.classList.add('progress-dots');
-        this.carousel.parentElement.insertBefore(dotContainer, this.carousel.nextSibling);
-        for (let i = 0; i < this.cards.length; i++) {
-            this.dots.push(document.createElement('li'));
-            dotContainer.insertAdjacentElement('beforeend', this.dots[i]);
-            this.dots[i].addEventListener('touchstart', _ => this.ondotclick(i));
-            this.dots[i].addEventListener('click', _ => this.ondotclick(i));
-            this.dots[i].tabIndex = i + 1;
-        }
-        this.dots[this.index].className = 'active';
     }
     ondragstart(e) {
         const touches = e.touches ? e.touches[0] : e;
@@ -47,7 +100,6 @@ class AyCarousel {
         this.totalMove =
             this.startX = pageX;
         this.startY = pageY;
-        this.dragging = undefined;
         this.callbacks.onmove = e => this.ondragmove(e);
         this.callbacks.onend = e => this.ondragend(e);
         this.totalMove = {
@@ -87,7 +139,7 @@ class AyCarousel {
                 y: pageY - this.position.y
             };
             const currentTranslate = this.delta.x + this.lastTranslate - this.offset.x;
-            this.translate(currentTranslate, 0, null);
+            this.translate(currentTranslate, 0);
             let cardMidpoint = (this.cards[this.index].getBoundingClientRect().left + this.cards[this.index].getBoundingClientRect().right) / 2;
             let viewportWidth = window.innerWidth;
             if (cardMidpoint <= 0 + this.SNAPPINESS) {
@@ -114,7 +166,12 @@ class AyCarousel {
         if (direction) {
             direction == 'right' ? nextIndex = this.index + 1 : nextIndex = this.index - 1;
         }
-        nextIndex = Math.min(Math.max(nextIndex, 0), this.cards.length - 1);
+        else if (nextIndex !== undefined) {
+            nextIndex = Math.min(Math.max(nextIndex, 0), this.cards.length - 1);
+        }
+        else {
+            return;
+        }
         this.index = nextIndex;
         const container = this.carousel.parentElement;
         const containerWidth = container.offsetWidth;
@@ -139,15 +196,16 @@ class AyCarousel {
         this.carousel.removeEventListener('touchend', this.callbacks.onend);
         this.carousel.removeEventListener('mouseup', this.callbacks.onend);
         this.carousel.removeEventListener('mouseleave', this.callbacks.onend);
-        this.dragging = undefined;
         this.snap(this.index, undefined);
         this.rescale();
     }
     translate(x, length, fn) {
         this.carousel.style['transition'] = 'transform';
-        this.carousel.style['transitionTimingFunction'] = fn;
         this.carousel.style['transitionDuration'] = `${length}ms`;
         this.carousel.style['transform'] = `translate3d(${x}px,0px,0px)`;
+        if (fn) {
+            this.carousel.style['transitionTimingFunction'] = fn;
+        }
         this.rescale();
     }
     percentVisible(card) {
@@ -178,5 +236,4 @@ class AyCarousel {
         }
     }
 }
-new AyCarousel(document.querySelector('.carousel'));
 //# sourceMappingURL=index.js.map

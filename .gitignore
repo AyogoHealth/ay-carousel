@@ -26,3 +26,4 @@ spec/dummy/tmp
 spec/dummy/public/system
 tmp
 reports
+dist-es5

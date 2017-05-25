@@ -1,9 +1,9 @@
 /*! Copyright 2017 Ayogo Health Inc. */
 (function (global, factory) {
-	typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
-	typeof define === 'function' && define.amd ? define(factory) :
-	(global.Carousel = factory());
-}(this, (function () { 'use strict';
+	typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory(require('angular')) :
+	typeof define === 'function' && define.amd ? define(['angular'], factory) :
+	(global.ayCarousel = factory(global.angular));
+}(this, (function (angular) { 'use strict';
 
 var AyCarousel = (function () {
     function AyCarousel(carousel) {
@@ -217,7 +217,19 @@ var AyCarousel = (function () {
     return AyCarousel;
 }());
 
-return AyCarousel;
+var modName = 'ayCarousel';
+angular.module(modName, [])
+    .directive('carousel', function () {
+    return {
+        restrict: 'E',
+        link: function (_$scope, $element) {
+            var el = $element[0];
+            new AyCarousel(el);
+        }
+    };
+});
+
+return modName;
 
 })));
-//# sourceMappingURL=index.js.map
+//# sourceMappingURL=angular1.js.map
