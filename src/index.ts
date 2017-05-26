@@ -88,8 +88,7 @@ export default class AyCarousel {
       this.cards = <any>this.carousel.children;
       this.rescale();
 
-      const cardRect = this.cards[0].getBoundingClientRect();
-      this.cardWidth = cardRect.width - cardRect.left - 2;
+      this.cardWidth = this.cards[0].offsetWidth;
 
       this.carousel.addEventListener('transitionend', () => {
         this.translating = false;
@@ -180,7 +179,7 @@ export default class AyCarousel {
 
   momentumScroll() {
     const timeConstant = 325;
-    const stopPoint = 20;
+    const stopPoint = 0.5;
 
     if(this.amplitude) {
       this.setIndex(this.calculateIndex());
@@ -276,26 +275,14 @@ export default class AyCarousel {
     }
     this.index = nextIndex;
 
-    const container = <HTMLElement>this.carousel.parentElement;
-    const containerWidth = container.offsetWidth;
-    const containerMargin = parseInt(<string>window.getComputedStyle(container).marginLeft, 0);
-  
-    const card = this.cards[nextIndex];
-
-    // Width of container - Width of card = All the extra space
-    // Divide this by 2 to get desired distance from edge on either side of card
-    const edgeToCardDist = (containerWidth - card.offsetWidth)/2;
-    
-    // Translating to the left of the desired card, minus our desired edge dist
-    // Multiplied by -1 because we are translating to the right
-    const nextOffset = Math.min((card.offsetLeft - edgeToCardDist + containerMargin) * -1, 0);
+    const nextOffset = this.calcOS(this.index);
 
     // http://easings.net/#easeInOutCirc
     // const ease = 'cubic-bezier(0.785, 0.135, 0.15, 0.86)';
     const ease = 'ease';
     const distance = Math.abs(this.currentTranslate - nextOffset);
     
-    const duration = Math.floor(distance/0.5);
+    const duration = Math.floor(distance/0.2);
 
     this.translate(nextOffset, duration, ease);
   }
@@ -320,14 +307,16 @@ export default class AyCarousel {
     const velocity = this.calcVelocity();
 
     if(velocity > 0.5 || velocity < -0.5) {
-      this.amplitude = 0.9 * velocity;
+      this.amplitude = 0.8 * velocity;
       this.target = Math.round(this.currentTranslate + this.amplitude);
-      this.target = Math.round(this.target/this.cardWidth) * this.cardWidth;
-      console.log(this.target);
+
+      // Round to nearest offset
+      this.target = Math.round(this.target/this.cardWidth) * this.cardWidth + (this.cardWidth + this.calcOS(1));
+
       this.timestamp = Date.now();
       window.requestAnimationFrame(_ => this.momentumScroll());
     }
-
+    
     // Snap to index, which has been set to the nearest card
     //this.snap(this.index, undefined);
   }
@@ -378,5 +367,19 @@ export default class AyCarousel {
     if(this.translating) {
       window.requestAnimationFrame(_ => this.rescale());
     }
+  }
+
+  calcOS(i) {
+    const container = <HTMLElement>(this.carousel.parentElement);
+    const containerWidth = container.offsetWidth;
+    const containerMargin = parseInt(<string>window.getComputedStyle(container).marginLeft, 0);
+    
+    // Width of container - Width of card = All the extra space
+    // Divide this by 2 to get desired distance from edge on either side of card
+    const edgeToCardDist = (containerWidth - this.cardWidth)/2;
+
+    // Translating to the left of the desired card, minus our desired edge dist
+    // Multiplied by -1 because we are translating to the right
+    return Math.min((this.cardWidth*i - edgeToCardDist + containerMargin) * -1, 0);
   }
 }
