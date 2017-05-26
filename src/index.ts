@@ -11,10 +11,19 @@ export default class AyCarousel {
   cardWidth : number;
   index : number = 0;
   carousel : HTMLElement;
-  readonly SNAPPINESS : number = 40;
+  readonly SNAPPINESS : number = 65;
   totalMove : any;
   lastPos : any;
   dots : HTMLElement[] = [];
+  rescaling : boolean = false;
+  translating : boolean = false;
+  amplitude;
+  velocity;
+  frame;
+  elapsed;
+  timestamp = 0;
+  previousTranslate = 0;
+  target;
 
   constructor(carousel : HTMLElement) {
     let CAROUSEL_STYLES = `
@@ -40,7 +49,7 @@ export default class AyCarousel {
     .card {
       border-radius: 5px;
       box-shadow: inset 0 0 1px black;
-      margin: 10px -1px;
+      margin: 10px 0px;
       float: left;
       height: 80vw;
       width: 80vw;
@@ -77,13 +86,16 @@ export default class AyCarousel {
       this.carousel.addEventListener('mousedown', e => this.ondragstart(e));
 
       this.cards = <any>this.carousel.children;
+      this.rescale();
 
-      this.cardWidth = this.cards[0].offsetWidth + this.cards[0].offsetLeft;
+      const cardRect = this.cards[0].getBoundingClientRect();
+      this.cardWidth = cardRect.width - cardRect.left - 2;
 
       this.carousel.addEventListener('transitionend', () => {
-        this.rescale();
+        this.translating = false;
+        window.requestAnimationFrame(_ => this.rescale());
       });
-      this.rescale();
+      window.requestAnimationFrame(_ => this.rescale());
       let dotContainer = document.createElement('ul');
       dotContainer.classList.add('progress-dots');
       
@@ -139,13 +151,49 @@ export default class AyCarousel {
       x: 0,
       y: 0
     }
-    
+
+    // Velocity Stuff
+    this.velocity = this.amplitude = 0;
+    this.frame = this.currentTranslate;
+
     this.carousel.addEventListener('mousemove', this.callbacks.onmove);
     this.carousel.addEventListener('touchmove', this.callbacks.onmove);
     
     this.carousel.addEventListener('touchend', this.callbacks.onend);
     this.carousel.addEventListener('mouseup', this.callbacks.onend);
     this.carousel.addEventListener('mouseleave', this.callbacks.onend);
+  }
+
+  calcVelocity() {
+    // Calculations from: 
+    // https://ariya.io/2013/11/javascript-kinetic-scrolling-part-2
+
+    const now = Date.now();
+    const elapsed = now - this.timestamp;
+    this.timestamp = now;
+    const delta = this.currentTranslate - this.frame;
+    this.frame = this.currentTranslate;
+
+    const v = 1000 * delta / (1 + elapsed);
+    return 0.8 * v + 0.2 * v;
+  }
+
+  momentumScroll() {
+    const timeConstant = 325;
+    const stopPoint = 20;
+
+    if(this.amplitude) {
+      this.setIndex(this.calculateIndex());
+      let elapsed = Date.now() - this.timestamp;
+      const delta = -this.amplitude * Math.exp(-elapsed / timeConstant);
+      if(delta > stopPoint || delta < -stopPoint) {
+        this.translate(this.target + delta, 0);
+        window.requestAnimationFrame(_ => this.momentumScroll());
+      } else {
+        this.translate(this.target, 0);
+        this.snap(this.index, undefined);
+      }
+    }
   }
 
   ondragmove(e) {
@@ -175,20 +223,28 @@ export default class AyCarousel {
         x: pageX - this.position.x,
         y: pageY - this.position.y
       };
-      const currentTranslate = this.delta.x + this.lastTranslate - this.offset.x;
 
-      this.translate(currentTranslate, 0);
+      this.previousTranslate = this.currentTranslate;
+      this.currentTranslate = this.delta.x + this.lastTranslate - this.offset.x;
 
-      let cardMidpoint = (this.cards[this.index].getBoundingClientRect().left + this.cards[this.index].getBoundingClientRect().right) / 2;
-      let viewportWidth = window.innerWidth;
+      this.translate(this.currentTranslate, 0);
 
-      if(cardMidpoint <= 0 + this.SNAPPINESS) {
-        // If card midpoint is close enough to left edge, decrement index
-        this.setIndex(this.index+1);
-      } else if(cardMidpoint > viewportWidth - this.SNAPPINESS) {
-        // If card midpoint is close enough to right edge, increment index
-        this.setIndex(this.index-1);
-      }
+      this.setIndex(this.calculateIndex());
+    }
+  }
+
+  calculateIndex() {
+    let cardMidpoint = (this.cards[this.index].getBoundingClientRect().left + this.cards[this.index].getBoundingClientRect().right) / 2;
+    let viewportWidth = window.innerWidth;
+
+    if(cardMidpoint <= 0 + this.SNAPPINESS) {
+      // If card midpoint is close enough to left edge, decrement index
+      return this.index + 1;
+    } else if(cardMidpoint > viewportWidth - this.SNAPPINESS) {
+      // If card midpoint is close enough to right edge, increment index
+      return this.index - 1;
+    } else {
+      return this.index;
     }
   }
 
@@ -235,8 +291,13 @@ export default class AyCarousel {
     const nextOffset = Math.min((card.offsetLeft - edgeToCardDist + containerMargin) * -1, 0);
 
     // http://easings.net/#easeInOutCirc
-    const ease = 'cubic-bezier(0.785, 0.135, 0.15, 0.86)';
-    this.translate(nextOffset, 250, ease);
+    // const ease = 'cubic-bezier(0.785, 0.135, 0.15, 0.86)';
+    const ease = 'ease';
+    const distance = Math.abs(this.currentTranslate - nextOffset);
+    
+    const duration = Math.floor(distance/0.5);
+
+    this.translate(nextOffset, duration, ease);
   }
 
   ondragend(e) {
@@ -256,10 +317,19 @@ export default class AyCarousel {
     this.carousel.removeEventListener('mouseup', this.callbacks.onend);
     this.carousel.removeEventListener('mouseleave', this.callbacks.onend);
 
-    // Snap to index, which has been set to the nearest card
-    this.snap(this.index, undefined);
+    const velocity = this.calcVelocity();
 
-    this.rescale();
+    if(velocity > 0.5 || velocity < -0.5) {
+      this.amplitude = 0.9 * velocity;
+      this.target = Math.round(this.currentTranslate + this.amplitude);
+      this.target = Math.round(this.target/this.cardWidth) * this.cardWidth;
+      console.log(this.target);
+      this.timestamp = Date.now();
+      window.requestAnimationFrame(_ => this.momentumScroll());
+    }
+
+    // Snap to index, which has been set to the nearest card
+    //this.snap(this.index, undefined);
   }
 
   translate(x : number, length : number, fn? : string) {
@@ -269,7 +339,11 @@ export default class AyCarousel {
     if(fn) {
       this.carousel.style['transitionTimingFunction'] = fn;
     }
-    this.rescale();
+
+    if(length > 0) {
+      this.translating = true;
+    }
+    window.requestAnimationFrame(_ => this.rescale());
   }
 
   percentVisible(card : HTMLElement) {
@@ -298,7 +372,11 @@ export default class AyCarousel {
 
       this.cards[i].style['transform'] = `scale(${scaler})`;
       this.cards[i].style['transitionTimingFunction'] = 'ease';
-      this.cards[i].style['transitionDuration'] = `250ms`;
+      this.cards[i].style['transitionDuration'] = `150ms`;
+    }
+
+    if(this.translating) {
+      window.requestAnimationFrame(_ => this.rescale());
     }
   }
 }
