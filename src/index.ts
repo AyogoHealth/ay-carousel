@@ -11,7 +11,6 @@ export default class AyCarousel {
   cardWidth : number;
   index : number = 0;
   carousel : HTMLElement;
-  readonly SNAPPINESS : number = 65;
   totalMove : any;
   lastPos : any;
   dots : HTMLElement[] = [];
@@ -24,6 +23,8 @@ export default class AyCarousel {
   timestamp = 0;
   previousTranslate = 0;
   target;
+  closestCard;
+  velocityInterval;
 
   constructor(carousel : HTMLElement) {
     let CAROUSEL_STYLES = `
@@ -51,7 +52,7 @@ export default class AyCarousel {
       box-shadow: inset 0 0 1px black;
       margin: 10px 0px;
       float: left;
-      height: 80vw;
+      height: auto;
       width: 80vw;
       display: block;
       background: white; 
@@ -134,7 +135,6 @@ export default class AyCarousel {
     let edgeToCardDist = this.cards[this.index].getBoundingClientRect().left;
     this.lastTranslate = this.carousel.getBoundingClientRect().left - edgeToCardDist;
 
-    this.totalMove = 
     this.startX = pageX;
     this.startY = pageY;
 
@@ -155,6 +155,8 @@ export default class AyCarousel {
     this.velocity = this.amplitude = 0;
     this.frame = this.currentTranslate;
 
+    this.velocityInterval = window.setInterval(this.calcVelocity, 100);
+
     this.carousel.addEventListener('mousemove', this.callbacks.onmove);
     this.carousel.addEventListener('touchmove', this.callbacks.onmove);
     
@@ -173,13 +175,16 @@ export default class AyCarousel {
     const delta = this.currentTranslate - this.frame;
     this.frame = this.currentTranslate;
 
+    // Distance moved, divided by time elapsed (+1 to avoid divide by 0)
+    // Multiplied by 1000 ms/sec
     const v = 1000 * delta / (1 + elapsed);
-    return 0.8 * v + 0.2 * v;
+
+    // Reduce by an arbitrary rate
+    return this.velocity = 0.1 * v;
   }
 
-  momentumScroll() {
+  momentumScroll(stopPoint) {
     const timeConstant = 325;
-    const stopPoint = 0.5;
 
     if(this.amplitude) {
       this.setIndex(this.calculateIndex());
@@ -187,7 +192,7 @@ export default class AyCarousel {
       const delta = -this.amplitude * Math.exp(-elapsed / timeConstant);
       if(delta > stopPoint || delta < -stopPoint) {
         this.translate(this.target + delta, 0);
-        window.requestAnimationFrame(_ => this.momentumScroll());
+        window.requestAnimationFrame(_ => this.momentumScroll(stopPoint));
       } else {
         this.translate(this.target, 0);
         this.snap(this.index, undefined);
@@ -226,20 +231,28 @@ export default class AyCarousel {
       this.previousTranslate = this.currentTranslate;
       this.currentTranslate = this.delta.x + this.lastTranslate - this.offset.x;
 
+      this.velocity = this.calcVelocity();
+      
       this.translate(this.currentTranslate, 0);
 
       this.setIndex(this.calculateIndex());
     }
   }
 
-  calculateIndex() {
-    let cardMidpoint = (this.cards[this.index].getBoundingClientRect().left + this.cards[this.index].getBoundingClientRect().right) / 2;
+  calculateIndex(position?) {
+    let cardLeft = position
+    if(!cardLeft) {
+      cardLeft = this.cards[this.index].getBoundingClientRect().left
+    }
+
+    let cardMidpoint = (cardLeft + cardLeft + this.cardWidth) / 2;
+    
     let viewportWidth = window.innerWidth;
 
-    if(cardMidpoint <= 0 + this.SNAPPINESS) {
+    if(cardMidpoint <= 0) {
       // If card midpoint is close enough to left edge, decrement index
       return this.index + 1;
-    } else if(cardMidpoint > viewportWidth - this.SNAPPINESS) {
+    } else if(cardMidpoint > viewportWidth) {
       // If card midpoint is close enough to right edge, increment index
       return this.index - 1;
     } else {
@@ -282,7 +295,7 @@ export default class AyCarousel {
     const ease = 'ease';
     const distance = Math.abs(this.currentTranslate - nextOffset);
     
-    const duration = Math.floor(distance/0.2);
+    const duration = Math.floor(distance/0.5) + 100;
 
     this.translate(nextOffset, duration, ease);
   }
@@ -304,21 +317,32 @@ export default class AyCarousel {
     this.carousel.removeEventListener('mouseup', this.callbacks.onend);
     this.carousel.removeEventListener('mouseleave', this.callbacks.onend);
 
-    const velocity = this.calcVelocity();
-
-    if(velocity > 0.5 || velocity < -0.5) {
-      this.amplitude = 0.8 * velocity;
+    window.clearInterval(this.velocityInterval);
+    if(this.velocity > 0.5 || this.velocity < -0.5) {
+      this.amplitude = 0.7 * this.velocity;
       this.target = Math.round(this.currentTranslate + this.amplitude);
+      
+      let stopPoint = 50;
 
-      // Round to nearest offset
-      this.target = Math.round(this.target/this.cardWidth) * this.cardWidth + (this.cardWidth + this.calcOS(1));
+      this.closestCard = Math.round(this.target/this.cardWidth) * this.cardWidth + (this.cardWidth + this.calcOS(1));
 
-      this.timestamp = Date.now();
-      window.requestAnimationFrame(_ => this.momentumScroll());
+      // If we're going to overshoot the card, modify the endpoint so we don't
+      // Overshooting the card and having it re-snap back is kinda janky
+      if(this.velocity < 0) {
+        if(this.closestCard > this.target) {
+          this.target = this.closestCard;
+        } 
+      } else {
+          if(this.closestCard < this.target) {
+            this.target = this.closestCard;
+          }
+      }
+      this.setIndex(this.calculateIndex());
+
+      window.requestAnimationFrame(_ => this.momentumScroll(stopPoint));
+    } else {
+      this.snap(this.index, undefined);
     }
-    
-    // Snap to index, which has been set to the nearest card
-    //this.snap(this.index, undefined);
   }
 
   translate(x : number, length : number, fn? : string) {

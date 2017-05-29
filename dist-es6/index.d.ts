@@ -11,13 +11,26 @@ export default class AyCarousel {
     cardWidth: number;
     index: number;
     carousel: HTMLElement;
-    readonly SNAPPINESS: number;
     totalMove: any;
     lastPos: any;
     dots: HTMLElement[];
+    rescaling: boolean;
+    translating: boolean;
+    amplitude: any;
+    velocity: any;
+    frame: any;
+    elapsed: any;
+    timestamp: number;
+    previousTranslate: number;
+    target: any;
+    closestCard: any;
+    velocityInterval: any;
     constructor(carousel: HTMLElement);
     ondragstart(e: any): void;
+    calcVelocity(): number;
+    momentumScroll(stopPoint: any): void;
     ondragmove(e: any): void;
+    calculateIndex(position?: any): number;
     ondotclick(i: any): void;
     setIndex(index: number): void;
     snap(nextIndex?: number, direction?: string): void;
@@ -25,4 +38,5 @@ export default class AyCarousel {
     translate(x: number, length: number, fn?: string): void;
     percentVisible(card: HTMLElement): number;
     rescale(): void;
+    calcOS(i: any): number;
 }
