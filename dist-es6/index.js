@@ -5,7 +5,6 @@ export default class AyCarousel {
         this.callbacks = {};
         this.index = 0;
         this.dots = [];
-        this.rescaling = false;
         this.translating = false;
         this.timestamp = 0;
         this.previousTranslate = 0;
@@ -239,16 +238,6 @@ export default class AyCarousel {
             this.amplitude = (1 - this.config.heaviness) * this.velocity;
             this.target = Math.round(this.currentTranslate + this.amplitude);
             this.closestCard = Math.round(this.target / this.cardWidth) * this.cardWidth + (this.cardWidth + this.calcOS(1));
-            if (this.velocity < 0) {
-                if (this.closestCard > this.target) {
-                    this.target = this.closestCard;
-                }
-            }
-            else {
-                if (this.closestCard < this.target) {
-                    this.target = this.closestCard;
-                }
-            }
             window.requestAnimationFrame(_ => this.momentumScroll(this.config.momentumSnapVelocityThreshold));
         }
         else {

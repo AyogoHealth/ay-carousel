@@ -14,7 +14,6 @@ export default class AyCarousel {
   totalMove : any;
   lastPos : any;
   dots : HTMLElement[] = [];
-  rescaling : boolean = false;
   translating : boolean = false;
   amplitude;
   velocity;
@@ -319,17 +318,6 @@ export default class AyCarousel {
       
       this.closestCard = Math.round(this.target/this.cardWidth) * this.cardWidth + (this.cardWidth + this.calcOS(1));
 
-      // If we're going to overshoot the card, modify the endpoint so we don't
-      // Overshooting the card and having it re-snap back is kinda janky
-      if(this.velocity < 0) {
-        if(this.closestCard > this.target) {
-          this.target = this.closestCard;
-        } 
-      } else {
-          if(this.closestCard < this.target) {
-            this.target = this.closestCard;
-          }
-      }
       window.requestAnimationFrame(_ => this.momentumScroll(this.config.momentumSnapVelocityThreshold));
     } else {
       this.snap(this.index);

@@ -14,7 +14,6 @@ export default class AyCarousel {
     totalMove: any;
     lastPos: any;
     dots: HTMLElement[];
-    rescaling: boolean;
     translating: boolean;
     amplitude: any;
     velocity: any;
