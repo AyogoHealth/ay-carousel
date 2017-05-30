@@ -330,9 +330,9 @@ angular.module(modName, [])
     .directive('carousel', function () {
     return {
         restrict: 'E',
-        link: function (_$scope, $element) {
+        link: function (_$scope, $element, attrs) {
             var el = $element[0];
-            new AyCarousel(el);
+            new AyCarousel(el, attrs.config);
         }
     };
 });

@@ -9,9 +9,9 @@ angular.module(modName, [])
 .directive('carousel', function() {
     return {
         restrict: 'E',
-        link: function(_$scope, $element) {
+        link: function(_$scope, $element, attrs) {
             let el = $element[0] as HTMLElement;
-            new AyCarousel(el);
+            new AyCarousel(el, attrs.config);
         }
     };
 });
