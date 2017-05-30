@@ -35,6 +35,7 @@ var AyCarousel = (function () {
         if (carousel) {
             this.config = this.setupConfig(config);
             this.carousel = carousel;
+            this.handleResize();
             this.carousel.setAttribute('style', "position: relative; width: 30000px; display: inline-block;");
             this.carousel.addEventListener('touchstart', function (e) { return _this.ondragstart(e); });
             this.carousel.addEventListener('mousedown', function (e) { return _this.ondragstart(e); });
@@ -46,25 +47,37 @@ var AyCarousel = (function () {
                 window.requestAnimationFrame(function (_) { return _this.rescale(); });
             });
             window.requestAnimationFrame(function (_) { return _this.rescale(); });
-            var dotContainer = document.createElement('ul');
-            dotContainer.classList.add('progress-dots');
-            if (this.carousel.parentElement) {
-                this.carousel.parentElement.insertBefore(dotContainer, this.carousel.nextSibling);
+            window.addEventListener('resize', this.handleResize);
+            if (this.config.enableDots) {
+                var dotContainer = document.createElement('ul');
+                dotContainer.classList.add('progress-dots');
+                this.carouselParent.element.insertBefore(dotContainer, this.carousel.nextSibling);
+                var _loop_1 = function (i) {
+                    this_1.dots.push(document.createElement('li'));
+                    dotContainer.insertAdjacentElement('beforeend', this_1.dots[i]);
+                    this_1.dots[i].addEventListener('touchstart', function (_) { return _this.ondotclick(i); });
+                    this_1.dots[i].addEventListener('click', function (_) { return _this.ondotclick(i); });
+                    this_1.dots[i].tabIndex = i + 1;
+                };
+                var this_1 = this;
+                for (var i = 0; i < this.cards.length; i++) {
+                    _loop_1(i);
+                }
+                this.dots[this.index].className = 'active';
             }
-            var _loop_1 = function (i) {
-                this_1.dots.push(document.createElement('li'));
-                dotContainer.insertAdjacentElement('beforeend', this_1.dots[i]);
-                this_1.dots[i].addEventListener('touchstart', function (_) { return _this.ondotclick(i); });
-                this_1.dots[i].addEventListener('click', function (_) { return _this.ondotclick(i); });
-                this_1.dots[i].tabIndex = i + 1;
-            };
-            var this_1 = this;
-            for (var i = 0; i < this.cards.length; i++) {
-                _loop_1(i);
-            }
-            this.dots[this.index].className = 'active';
         }
     }
+    AyCarousel.prototype.handleResize = function () {
+        this.viewportWidth = window.innerWidth;
+        var carouselParent = this.carousel.parentElement;
+        if (carouselParent) {
+            this.carouselParent = {
+                element: carouselParent,
+                width: carouselParent.offsetWidth,
+                marginLeft: parseInt(window.getComputedStyle(carouselParent).marginLeft, 0)
+            };
+        }
+    };
     AyCarousel.prototype.ondragstart = function (e) {
         var _this = this;
         var touches = e.touches ? e.touches[0] : e;
@@ -114,8 +127,9 @@ var AyCarousel = (function () {
     AyCarousel.prototype.momentumScroll = function (stopPoint) {
         var _this = this;
         if (this.amplitude) {
+            var decelerationFactor = 1 + 1.5 * Math.max(0.8 - this.percentVisible(this.cards[this.index]), 0);
             var elapsed = Date.now() - this.timestamp;
-            var delta = -this.amplitude * Math.exp(-elapsed / this.config.decelerationRate);
+            var delta = -this.amplitude * Math.exp(-elapsed / (this.config.decelerationRate * decelerationFactor));
             if (delta > stopPoint || delta < -stopPoint) {
                 this.translate(this.target + delta, 0);
                 window.requestAnimationFrame(function (_) { return _this.momentumScroll(stopPoint); });
@@ -159,11 +173,10 @@ var AyCarousel = (function () {
             cardLeft = this.cards[this.index].getBoundingClientRect().left;
         }
         var cardMidpoint = (cardLeft + cardLeft + this.cardWidth) / 2;
-        var viewportWidth = window.innerWidth;
         if (cardMidpoint <= 0) {
             return this.index + 1;
         }
-        else if (cardMidpoint > viewportWidth) {
+        else if (cardMidpoint > this.viewportWidth) {
             return this.index - 1;
         }
         else {
@@ -241,16 +254,14 @@ var AyCarousel = (function () {
     };
     AyCarousel.prototype.percentVisible = function (card) {
         var cardRect = card.getBoundingClientRect();
-        var cardWidth = card.offsetWidth;
-        var frameWidth = window.innerWidth;
-        if ((cardRect.left < 0 && cardRect.right < 0) || cardRect.left > frameWidth) {
+        if ((cardRect.left < 0 && cardRect.right < 0) || cardRect.left > this.viewportWidth) {
             return 0;
         }
         else if (cardRect.left < 0) {
-            return cardRect.right / cardWidth;
+            return cardRect.right / this.cardWidth;
         }
-        else if (cardRect.right > frameWidth) {
-            return (frameWidth - cardRect.left) / cardWidth;
+        else if (cardRect.right > this.viewportWidth) {
+            return (this.viewportWidth - cardRect.left) / this.cardWidth;
         }
         else {
             return 1;
@@ -271,20 +282,18 @@ var AyCarousel = (function () {
         }
     };
     AyCarousel.prototype.calcOS = function (i) {
-        var container = (this.carousel.parentElement);
-        var containerWidth = container.offsetWidth;
-        var containerMargin = parseInt(window.getComputedStyle(container).marginLeft, 0);
-        var edgeToCardDist = (containerWidth - this.cardWidth) / 2;
-        return Math.min((this.cardWidth * i - edgeToCardDist + containerMargin) * -1, 0);
+        var edgeToCardDist = (this.carouselParent.width - this.cardWidth) / 2;
+        return Math.min((this.cardWidth * i - edgeToCardDist + this.carouselParent.marginLeft) * -1, 0);
     };
     AyCarousel.prototype.setupConfig = function (config) {
         var defaultConfig = {
             decelerationRate: 700,
-            momentumSnapVelocityThreshold: 75,
+            momentumSnapVelocityThreshold: 100,
             minCardScale: 0.9,
             snapSpeedConstant: 300,
             heaviness: 0.9,
-            shrinkSpeed: 150
+            shrinkSpeed: 150,
+            enableDots: true
         };
         return assign({}, defaultConfig, config);
     };

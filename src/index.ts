@@ -25,6 +25,8 @@ export default class AyCarousel {
   closestCard;
   velocityInterval;
   config;
+  viewportWidth;
+  carouselParent;
 
   constructor(carousel : HTMLElement, config?) {
     let CAROUSEL_STYLES = `
@@ -83,6 +85,7 @@ export default class AyCarousel {
       this.config = this.setupConfig(config);
 
       this.carousel = carousel;
+      this.handleResize();
 
       this.carousel.setAttribute('style',  `position: relative; width: 30000px; display: inline-block;`);
       this.carousel.addEventListener('touchstart', e => this.ondragstart(e));
@@ -98,23 +101,39 @@ export default class AyCarousel {
         window.requestAnimationFrame(_ => this.rescale());
       });
       window.requestAnimationFrame(_ => this.rescale());
-      let dotContainer = document.createElement('ul');
-      dotContainer.classList.add('progress-dots');
-      
-      // Inserting before the carousel's nextSibling <=> Inserting after the carousel
-      if(this.carousel.parentElement) {
-        this.carousel.parentElement.insertBefore(dotContainer, this.carousel.nextSibling);
-      }
+      window.addEventListener('resize', this.handleResize);
 
-      for(let i = 0; i < this.cards.length; i++) {
-        this.dots.push(document.createElement('li'));
-        dotContainer.insertAdjacentElement('beforeend', this.dots[i]);
-        this.dots[i].addEventListener('touchstart', _ => this.ondotclick(i));
-        this.dots[i].addEventListener('click', _ => this.ondotclick(i));
-        this.dots[i].tabIndex = i+1;
+      if(this.config.enableDots) {
+        let dotContainer = document.createElement('ul');
+        dotContainer.classList.add('progress-dots');
+        
+        // Inserting before the carousel's nextSibling <=> Inserting after the carousel
+        this.carouselParent.element.insertBefore(dotContainer, this.carousel.nextSibling);
+
+        for(let i = 0; i < this.cards.length; i++) {
+          this.dots.push(document.createElement('li'));
+          dotContainer.insertAdjacentElement('beforeend', this.dots[i]);
+          this.dots[i].addEventListener('touchstart', _ => this.ondotclick(i));
+          this.dots[i].addEventListener('click', _ => this.ondotclick(i));
+          this.dots[i].tabIndex = i+1;
+        }
+        this.dots[this.index].className = 'active';
       }
-      this.dots[this.index].className = 'active';
+    }
+  }
+
+  handleResize() {
+    this.viewportWidth = window.innerWidth;
+
+    const carouselParent = this.carousel.parentElement;
+
+    if(carouselParent) {
+      this.carouselParent = {
+        element: carouselParent,
+        width: carouselParent.offsetWidth,
+        marginLeft: parseInt(<string>window.getComputedStyle(carouselParent).marginLeft, 0)
       }
+    }
   }
 
   ondragstart(e) {
@@ -186,8 +205,11 @@ export default class AyCarousel {
 
   momentumScroll(stopPoint) {
     if(this.amplitude) {
+      const decelerationFactor = 1 + 1.5*Math.max(0.8 - this.percentVisible(this.cards[this.index]), 0);
       let elapsed = Date.now() - this.timestamp;
-      const delta = -this.amplitude * Math.exp(-elapsed / this.config.decelerationRate);
+
+      const delta = -this.amplitude * Math.exp(-elapsed / (this.config.decelerationRate*decelerationFactor));
+
       if(delta > stopPoint || delta < -stopPoint) {
         this.translate(this.target + delta, 0);
         window.requestAnimationFrame(_ => this.momentumScroll(stopPoint));
@@ -214,10 +236,12 @@ export default class AyCarousel {
       y: move.y
     };
 
+    // Don't do anything if the move doesn't exceed our threshold
     if(this.totalMove.x < 10 && this.totalMove.y < 10) {
       return;
     }
 
+    // If the swipe is vertical, allow page to scroll instead of moving carousel
     if(this.totalMove.x > this.totalMove.y) {
       e.preventDefault();
       this.delta = {
@@ -242,12 +266,10 @@ export default class AyCarousel {
 
     let cardMidpoint = (cardLeft + cardLeft + this.cardWidth) / 2;
     
-    let viewportWidth = window.innerWidth;
-
     if(cardMidpoint <= 0) {
       // If card midpoint is close enough to left edge, decrement index
       return this.index + 1;
-    } else if(cardMidpoint > viewportWidth) {
+    } else if(cardMidpoint > this.viewportWidth) {
       // If card midpoint is close enough to right edge, increment index
       return this.index - 1;
     } else {
@@ -285,7 +307,6 @@ export default class AyCarousel {
 
     const nextOffset = this.calcOS(this.index);
 
-    // http://easings.net/#easeInOutCirc
     const ease = 'ease';
     const distance = Math.abs(this.currentTranslate - nextOffset);
     
@@ -340,15 +361,13 @@ export default class AyCarousel {
 
   percentVisible(card : HTMLElement) {
     let cardRect = card.getBoundingClientRect();
-    let cardWidth = card.offsetWidth;
-    let frameWidth = window.innerWidth;
 
-    if((cardRect.left < 0 && cardRect.right < 0) || cardRect.left > frameWidth) {
+    if((cardRect.left < 0 && cardRect.right < 0) || cardRect.left > this.viewportWidth) {
       return 0;
     } else if(cardRect.left < 0) {
-      return cardRect.right/cardWidth;
-    } else if(cardRect.right > frameWidth) {
-      return (frameWidth - cardRect.left)/cardWidth;
+      return cardRect.right/this.cardWidth;
+    } else if(cardRect.right > this.viewportWidth) {
+      return (this.viewportWidth - cardRect.left)/this.cardWidth;
     } else {
       return 1;
     }
@@ -372,33 +391,31 @@ export default class AyCarousel {
     }
   }
 
-  calcOS(i) {
-    const container = <HTMLElement>(this.carousel.parentElement);
-    const containerWidth = container.offsetWidth;
-    const containerMargin = parseInt(<string>window.getComputedStyle(container).marginLeft, 0);
-    
+  calcOS(i) {    
     // Width of container - Width of card = All the extra space
     // Divide this by 2 to get desired distance from edge on either side of card
-    const edgeToCardDist = (containerWidth - this.cardWidth)/2;
+    const edgeToCardDist = (this.carouselParent.width - this.cardWidth)/2;
 
     // Translating to the left of the desired card, minus our desired edge dist
     // Multiplied by -1 because we are translating to the right
-    return Math.min((this.cardWidth*i - edgeToCardDist + containerMargin) * -1, 0);
+    return Math.min((this.cardWidth*i - edgeToCardDist + this.carouselParent.marginLeft) * -1, 0);
   }
 
   setupConfig(config?) {
     const defaultConfig = {
       decelerationRate: 700, // How fast we decelerate
-      momentumSnapVelocityThreshold: 75, // pixels/sec cutoff for when we snap
+      momentumSnapVelocityThreshold: 100, // Higher = snappier
       minCardScale: 0.9, // Smallest that partially-viewable cards can scale to
       snapSpeedConstant: 300, // Constant ms to be added to snapping duration
       heaviness: 0.9, // Scale of 0 to 1, higher = less momentum
-      shrinkSpeed: 150 // Speed of card scaling transition, in ms 
+      shrinkSpeed: 150, // Speed of card scaling transition, in ms 
+      enableDots: true  
     };
     return assign({}, defaultConfig, config);
   }
 }
 
+// Roughly taken from MDN
 const assign = function(target, ...args) { // .length of function is 2
   'use strict';
   args;

@@ -25,7 +25,10 @@ export default class AyCarousel {
     closestCard: any;
     velocityInterval: any;
     config: any;
+    viewportWidth: any;
+    carouselParent: any;
     constructor(carousel: HTMLElement, config?: any);
+    handleResize(): void;
     ondragstart(e: any): void;
     calcVelocity(): number;
     momentumScroll(stopPoint: any): void;
