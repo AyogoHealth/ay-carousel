@@ -1,5 +1,5 @@
 export default class AyCarousel {
-    constructor(carousel) {
+    constructor(carousel, config) {
         this.startX = 0;
         this.startY = 0;
         this.callbacks = {};
@@ -60,6 +60,7 @@ export default class AyCarousel {
             document.appendChild(carStyle);
         }
         if (carousel) {
+            this.config = this.setupConfig(config);
             this.carousel = carousel;
             this.carousel.setAttribute('style', `position: relative; width: 30000px; display: inline-block;`);
             this.carousel.addEventListener('touchstart', e => this.ondragstart(e));
@@ -130,21 +131,18 @@ export default class AyCarousel {
         const delta = this.currentTranslate - this.frame;
         this.frame = this.currentTranslate;
         const v = 1000 * delta / (1 + elapsed);
-        return this.velocity = 0.1 * v;
+        return this.velocity = 0.8 * v + 0.2 * this.velocity;
     }
     momentumScroll(stopPoint) {
-        const timeConstant = 325;
         if (this.amplitude) {
-            this.setIndex(this.calculateIndex());
             let elapsed = Date.now() - this.timestamp;
-            const delta = -this.amplitude * Math.exp(-elapsed / timeConstant);
+            const delta = -this.amplitude * Math.exp(-elapsed / this.config.decelerationRate);
             if (delta > stopPoint || delta < -stopPoint) {
                 this.translate(this.target + delta, 0);
                 window.requestAnimationFrame(_ => this.momentumScroll(stopPoint));
             }
             else {
-                this.translate(this.target, 0);
-                this.snap(this.index, undefined);
+                this.snap(this.index);
             }
         }
     }
@@ -174,7 +172,6 @@ export default class AyCarousel {
             this.currentTranslate = this.delta.x + this.lastTranslate - this.offset.x;
             this.velocity = this.calcVelocity();
             this.translate(this.currentTranslate, 0);
-            this.setIndex(this.calculateIndex());
         }
     }
     calculateIndex(position) {
@@ -220,7 +217,7 @@ export default class AyCarousel {
         const nextOffset = this.calcOS(this.index);
         const ease = 'ease';
         const distance = Math.abs(this.currentTranslate - nextOffset);
-        const duration = Math.floor(distance / 0.5) + 100;
+        const duration = Math.floor(distance * 1.25) + this.config.snapSpeedConstant;
         this.translate(nextOffset, duration, ease);
     }
     ondragend(e) {
@@ -239,9 +236,8 @@ export default class AyCarousel {
         this.carousel.removeEventListener('mouseleave', this.callbacks.onend);
         window.clearInterval(this.velocityInterval);
         if (this.velocity > 0.5 || this.velocity < -0.5) {
-            this.amplitude = 0.7 * this.velocity;
+            this.amplitude = (1 - this.config.heaviness) * this.velocity;
             this.target = Math.round(this.currentTranslate + this.amplitude);
-            let stopPoint = 50;
             this.closestCard = Math.round(this.target / this.cardWidth) * this.cardWidth + (this.cardWidth + this.calcOS(1));
             if (this.velocity < 0) {
                 if (this.closestCard > this.target) {
@@ -253,11 +249,10 @@ export default class AyCarousel {
                     this.target = this.closestCard;
                 }
             }
-            this.setIndex(this.calculateIndex());
-            window.requestAnimationFrame(_ => this.momentumScroll(stopPoint));
+            window.requestAnimationFrame(_ => this.momentumScroll(this.config.momentumSnapVelocityThreshold));
         }
         else {
-            this.snap(this.index, undefined);
+            this.snap(this.index);
         }
     }
     translate(x, length, fn) {
@@ -267,6 +262,7 @@ export default class AyCarousel {
         if (fn) {
             this.carousel.style['transitionTimingFunction'] = fn;
         }
+        this.setIndex(this.calculateIndex());
         if (length > 0) {
             this.translating = true;
         }
@@ -293,10 +289,10 @@ export default class AyCarousel {
         const from = Math.max(this.index - 2, 0);
         const to = Math.min(this.index + 2, this.cards.length - 1);
         for (let i = from; i <= to; i++) {
-            let scaler = Math.max(this.percentVisible(this.cards[i]), 0.9);
+            let scaler = Math.max(this.percentVisible(this.cards[i]), this.config.minCardScale);
             this.cards[i].style['transform'] = `scale(${scaler})`;
             this.cards[i].style['transitionTimingFunction'] = 'ease';
-            this.cards[i].style['transitionDuration'] = `150ms`;
+            this.cards[i].style['transitionDuration'] = `${this.config.shrinkSpeed}ms`;
         }
         if (this.translating) {
             window.requestAnimationFrame(_ => this.rescale());
@@ -309,5 +305,35 @@ export default class AyCarousel {
         const edgeToCardDist = (containerWidth - this.cardWidth) / 2;
         return Math.min((this.cardWidth * i - edgeToCardDist + containerMargin) * -1, 0);
     }
+    setupConfig(config) {
+        const defaultConfig = {
+            decelerationRate: 700,
+            momentumSnapVelocityThreshold: 75,
+            minCardScale: 0.9,
+            snapSpeedConstant: 300,
+            heaviness: 0.9,
+            shrinkSpeed: 150
+        };
+        return assign({}, defaultConfig, config);
+    }
 }
+const assign = function (target, ...args) {
+    'use strict';
+    args;
+    if (target == null) {
+        throw new TypeError('Cannot convert undefined or null to object');
+    }
+    var to = Object(target);
+    for (var index = 1; index < arguments.length; index++) {
+        var nextSource = arguments[index];
+        if (nextSource != null) {
+            for (var nextKey in nextSource) {
+                if (Object.prototype.hasOwnProperty.call(nextSource, nextKey)) {
+                    to[nextKey] = nextSource[nextKey];
+                }
+            }
+        }
+    }
+    return to;
+};
 //# sourceMappingURL=index.js.map

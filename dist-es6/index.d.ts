@@ -25,7 +25,8 @@ export default class AyCarousel {
     target: any;
     closestCard: any;
     velocityInterval: any;
-    constructor(carousel: HTMLElement);
+    config: any;
+    constructor(carousel: HTMLElement, config?: any);
     ondragstart(e: any): void;
     calcVelocity(): number;
     momentumScroll(stopPoint: any): void;
@@ -39,4 +40,5 @@ export default class AyCarousel {
     percentVisible(card: HTMLElement): number;
     rescale(): void;
     calcOS(i: any): number;
+    setupConfig(config?: any): any;
 }

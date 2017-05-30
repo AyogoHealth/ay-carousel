@@ -6,7 +6,7 @@
 }(this, (function () { 'use strict';
 
 var AyCarousel = (function () {
-    function AyCarousel(carousel) {
+    function AyCarousel(carousel, config) {
         var _this = this;
         this.startX = 0;
         this.startY = 0;
@@ -34,6 +34,7 @@ var AyCarousel = (function () {
             document.appendChild(carStyle);
         }
         if (carousel) {
+            this.config = this.setupConfig(config);
             this.carousel = carousel;
             this.carousel.setAttribute('style', "position: relative; width: 30000px; display: inline-block;");
             this.carousel.addEventListener('touchstart', function (e) { return _this.ondragstart(e); });
@@ -109,22 +110,19 @@ var AyCarousel = (function () {
         var delta = this.currentTranslate - this.frame;
         this.frame = this.currentTranslate;
         var v = 1000 * delta / (1 + elapsed);
-        return this.velocity = 0.1 * v;
+        return this.velocity = 0.8 * v + 0.2 * this.velocity;
     };
     AyCarousel.prototype.momentumScroll = function (stopPoint) {
         var _this = this;
-        var timeConstant = 325;
         if (this.amplitude) {
-            this.setIndex(this.calculateIndex());
             var elapsed = Date.now() - this.timestamp;
-            var delta = -this.amplitude * Math.exp(-elapsed / timeConstant);
+            var delta = -this.amplitude * Math.exp(-elapsed / this.config.decelerationRate);
             if (delta > stopPoint || delta < -stopPoint) {
                 this.translate(this.target + delta, 0);
                 window.requestAnimationFrame(function (_) { return _this.momentumScroll(stopPoint); });
             }
             else {
-                this.translate(this.target, 0);
-                this.snap(this.index, undefined);
+                this.snap(this.index);
             }
         }
     };
@@ -154,7 +152,6 @@ var AyCarousel = (function () {
             this.currentTranslate = this.delta.x + this.lastTranslate - this.offset.x;
             this.velocity = this.calcVelocity();
             this.translate(this.currentTranslate, 0);
-            this.setIndex(this.calculateIndex());
         }
     };
     AyCarousel.prototype.calculateIndex = function (position) {
@@ -200,7 +197,7 @@ var AyCarousel = (function () {
         var nextOffset = this.calcOS(this.index);
         var ease = 'ease';
         var distance = Math.abs(this.currentTranslate - nextOffset);
-        var duration = Math.floor(distance / 0.5) + 100;
+        var duration = Math.floor(distance * 1.25) + this.config.snapSpeedConstant;
         this.translate(nextOffset, duration, ease);
     };
     AyCarousel.prototype.ondragend = function (e) {
@@ -220,9 +217,8 @@ var AyCarousel = (function () {
         this.carousel.removeEventListener('mouseleave', this.callbacks.onend);
         window.clearInterval(this.velocityInterval);
         if (this.velocity > 0.5 || this.velocity < -0.5) {
-            this.amplitude = 0.7 * this.velocity;
+            this.amplitude = (1 - this.config.heaviness) * this.velocity;
             this.target = Math.round(this.currentTranslate + this.amplitude);
-            var stopPoint_1 = 50;
             this.closestCard = Math.round(this.target / this.cardWidth) * this.cardWidth + (this.cardWidth + this.calcOS(1));
             if (this.velocity < 0) {
                 if (this.closestCard > this.target) {
@@ -234,11 +230,10 @@ var AyCarousel = (function () {
                     this.target = this.closestCard;
                 }
             }
-            this.setIndex(this.calculateIndex());
-            window.requestAnimationFrame(function (_) { return _this.momentumScroll(stopPoint_1); });
+            window.requestAnimationFrame(function (_) { return _this.momentumScroll(_this.config.momentumSnapVelocityThreshold); });
         }
         else {
-            this.snap(this.index, undefined);
+            this.snap(this.index);
         }
     };
     AyCarousel.prototype.translate = function (x, length, fn) {
@@ -249,6 +244,7 @@ var AyCarousel = (function () {
         if (fn) {
             this.carousel.style['transitionTimingFunction'] = fn;
         }
+        this.setIndex(this.calculateIndex());
         if (length > 0) {
             this.translating = true;
         }
@@ -276,10 +272,10 @@ var AyCarousel = (function () {
         var from = Math.max(this.index - 2, 0);
         var to = Math.min(this.index + 2, this.cards.length - 1);
         for (var i = from; i <= to; i++) {
-            var scaler = Math.max(this.percentVisible(this.cards[i]), 0.9);
+            var scaler = Math.max(this.percentVisible(this.cards[i]), this.config.minCardScale);
             this.cards[i].style['transform'] = "scale(" + scaler + ")";
             this.cards[i].style['transitionTimingFunction'] = 'ease';
-            this.cards[i].style['transitionDuration'] = "150ms";
+            this.cards[i].style['transitionDuration'] = this.config.shrinkSpeed + "ms";
         }
         if (this.translating) {
             window.requestAnimationFrame(function (_) { return _this.rescale(); });
@@ -292,8 +288,42 @@ var AyCarousel = (function () {
         var edgeToCardDist = (containerWidth - this.cardWidth) / 2;
         return Math.min((this.cardWidth * i - edgeToCardDist + containerMargin) * -1, 0);
     };
+    AyCarousel.prototype.setupConfig = function (config) {
+        var defaultConfig = {
+            decelerationRate: 700,
+            momentumSnapVelocityThreshold: 75,
+            minCardScale: 0.9,
+            snapSpeedConstant: 300,
+            heaviness: 0.9,
+            shrinkSpeed: 150
+        };
+        return assign({}, defaultConfig, config);
+    };
     return AyCarousel;
 }());
+var assign = function (target) {
+    'use strict';
+    var args = [];
+    for (var _i = 1; _i < arguments.length; _i++) {
+        args[_i - 1] = arguments[_i];
+    }
+    args;
+    if (target == null) {
+        throw new TypeError('Cannot convert undefined or null to object');
+    }
+    var to = Object(target);
+    for (var index = 1; index < arguments.length; index++) {
+        var nextSource = arguments[index];
+        if (nextSource != null) {
+            for (var nextKey in nextSource) {
+                if (Object.prototype.hasOwnProperty.call(nextSource, nextKey)) {
+                    to[nextKey] = nextSource[nextKey];
+                }
+            }
+        }
+    }
+    return to;
+};
 
 return AyCarousel;
 

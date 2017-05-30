@@ -25,8 +25,9 @@ export default class AyCarousel {
   target;
   closestCard;
   velocityInterval;
+  config;
 
-  constructor(carousel : HTMLElement) {
+  constructor(carousel : HTMLElement, config?) {
     let CAROUSEL_STYLES = `
     .progress-dots  {
       text-align: center;
@@ -80,6 +81,8 @@ export default class AyCarousel {
     }
 
     if(carousel) {
+      this.config = this.setupConfig(config);
+
       this.carousel = carousel;
 
       this.carousel.setAttribute('style',  `position: relative; width: 30000px; display: inline-block;`);
@@ -179,23 +182,18 @@ export default class AyCarousel {
     // Multiplied by 1000 ms/sec
     const v = 1000 * delta / (1 + elapsed);
 
-    // Reduce by an arbitrary rate
-    return this.velocity = 0.1 * v;
+    return this.velocity = 0.8 * v + 0.2 * this.velocity;
   }
 
   momentumScroll(stopPoint) {
-    const timeConstant = 325;
-
     if(this.amplitude) {
-      this.setIndex(this.calculateIndex());
       let elapsed = Date.now() - this.timestamp;
-      const delta = -this.amplitude * Math.exp(-elapsed / timeConstant);
+      const delta = -this.amplitude * Math.exp(-elapsed / this.config.decelerationRate);
       if(delta > stopPoint || delta < -stopPoint) {
         this.translate(this.target + delta, 0);
         window.requestAnimationFrame(_ => this.momentumScroll(stopPoint));
       } else {
-        this.translate(this.target, 0);
-        this.snap(this.index, undefined);
+        this.snap(this.index);
       }
     }
   }
@@ -234,8 +232,6 @@ export default class AyCarousel {
       this.velocity = this.calcVelocity();
       
       this.translate(this.currentTranslate, 0);
-
-      this.setIndex(this.calculateIndex());
     }
   }
 
@@ -291,11 +287,10 @@ export default class AyCarousel {
     const nextOffset = this.calcOS(this.index);
 
     // http://easings.net/#easeInOutCirc
-    // const ease = 'cubic-bezier(0.785, 0.135, 0.15, 0.86)';
     const ease = 'ease';
     const distance = Math.abs(this.currentTranslate - nextOffset);
     
-    const duration = Math.floor(distance/0.5) + 100;
+    const duration = Math.floor(distance*1.25) + this.config.snapSpeedConstant;
 
     this.translate(nextOffset, duration, ease);
   }
@@ -319,11 +314,9 @@ export default class AyCarousel {
 
     window.clearInterval(this.velocityInterval);
     if(this.velocity > 0.5 || this.velocity < -0.5) {
-      this.amplitude = 0.7 * this.velocity;
+      this.amplitude = (1-this.config.heaviness) * this.velocity;
       this.target = Math.round(this.currentTranslate + this.amplitude);
       
-      let stopPoint = 50;
-
       this.closestCard = Math.round(this.target/this.cardWidth) * this.cardWidth + (this.cardWidth + this.calcOS(1));
 
       // If we're going to overshoot the card, modify the endpoint so we don't
@@ -337,11 +330,9 @@ export default class AyCarousel {
             this.target = this.closestCard;
           }
       }
-      this.setIndex(this.calculateIndex());
-
-      window.requestAnimationFrame(_ => this.momentumScroll(stopPoint));
+      window.requestAnimationFrame(_ => this.momentumScroll(this.config.momentumSnapVelocityThreshold));
     } else {
-      this.snap(this.index, undefined);
+      this.snap(this.index);
     }
   }
 
@@ -352,7 +343,7 @@ export default class AyCarousel {
     if(fn) {
       this.carousel.style['transitionTimingFunction'] = fn;
     }
-
+    this.setIndex(this.calculateIndex());
     if(length > 0) {
       this.translating = true;
     }
@@ -381,11 +372,11 @@ export default class AyCarousel {
     const to = Math.min(this.index+2, this.cards.length-1)
 
     for(let i = from; i<=to; i++) {
-      let scaler = Math.max(this.percentVisible(this.cards[i]), 0.9);
+      let scaler = Math.max(this.percentVisible(this.cards[i]), this.config.minCardScale);
 
       this.cards[i].style['transform'] = `scale(${scaler})`;
       this.cards[i].style['transitionTimingFunction'] = 'ease';
-      this.cards[i].style['transitionDuration'] = `150ms`;
+      this.cards[i].style['transitionDuration'] = `${this.config.shrinkSpeed}ms`;
     }
 
     if(this.translating) {
@@ -406,4 +397,40 @@ export default class AyCarousel {
     // Multiplied by -1 because we are translating to the right
     return Math.min((this.cardWidth*i - edgeToCardDist + containerMargin) * -1, 0);
   }
+
+  setupConfig(config?) {
+    const defaultConfig = {
+      decelerationRate: 700, // How fast we decelerate
+      momentumSnapVelocityThreshold: 75, // pixels/sec cutoff for when we snap
+      minCardScale: 0.9, // Smallest that partially-viewable cards can scale to
+      snapSpeedConstant: 300, // Constant ms to be added to snapping duration
+      heaviness: 0.9, // Scale of 0 to 1, higher = less momentum
+      shrinkSpeed: 150 // Speed of card scaling transition, in ms 
+    };
+    return assign({}, defaultConfig, config);
+  }
 }
+
+const assign = function(target, ...args) { // .length of function is 2
+  'use strict';
+  args;
+  if (target == null) { // TypeError if undefined or null
+    throw new TypeError('Cannot convert undefined or null to object');
+  }
+
+  var to = Object(target);
+
+  for (var index = 1; index < arguments.length; index++) {
+    var nextSource = arguments[index];
+
+    if (nextSource != null) { // Skip over if undefined or null
+      for (var nextKey in nextSource) {
+        // Avoid bugs when hasOwnProperty is shadowed
+        if (Object.prototype.hasOwnProperty.call(nextSource, nextKey)) {
+          to[nextKey] = nextSource[nextKey];
+        }
+      }
+    }
+  }
+  return to;
+};
