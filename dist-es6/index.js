@@ -14,6 +14,10 @@ export default class AyCarousel {
       list-style: none;
     }
 
+    .progress-dots > li.active {
+      background: #45a2e2;
+    }
+
     .progress-dots > li {
       border-radius: 50%;
       background: white;
@@ -24,23 +28,8 @@ export default class AyCarousel {
       border: 1px solid black;
     }
 
-    .progress-dots > li.active {
-      background: #45a2e2;
-    }
-
-    .card {
-      border-radius: 5px;
-      box-shadow: inset 0 0 1px black;
-      margin: 10px 0px;
+    .carousel-item {
       float: left;
-      height: auto;
-      width: 80vw;
-      display: block;
-      background: white; 
-      line-height: 150px;
-      font-size: 32px;
-      font-family: sans-serif;
-      text-align: center;
     }
     `;
         let carStyle = document.createElement('style');
@@ -147,10 +136,14 @@ export default class AyCarousel {
     }
     momentumScroll(stopPoint) {
         if (this.amplitude) {
-            const decelerationFactor = 1 + 1.5 * Math.max(0.8 - this.percentVisible(this.cards[this.index]), 0);
             let elapsed = Date.now() - this.timestamp;
-            const delta = -this.amplitude * Math.exp(-elapsed / (this.config.decelerationRate * decelerationFactor));
+            const delta = -this.amplitude * Math.exp(-elapsed / (this.config.decelerationRate));
             if (delta > stopPoint || delta < -stopPoint) {
+                const outOfBoundsLeft = this.target + delta > 0 + this.cardWidth;
+                const outOfBoundsRight = this.target + delta < -this.cardWidth * this.cards.length;
+                if (outOfBoundsLeft || outOfBoundsRight) {
+                    return this.snap(this.index);
+                }
                 this.translate(this.target + delta, 0);
                 window.requestAnimationFrame(_ => this.momentumScroll(stopPoint));
             }
@@ -308,7 +301,7 @@ export default class AyCarousel {
             momentumSnapVelocityThreshold: 100,
             minCardScale: 0.9,
             snapSpeedConstant: 300,
-            heaviness: 0.9,
+            heaviness: 0.95,
             shrinkSpeed: 150,
             enableDots: true
         };

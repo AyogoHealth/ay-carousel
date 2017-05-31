@@ -16,7 +16,7 @@ var AyCarousel = (function () {
         this.translating = false;
         this.timestamp = 0;
         this.previousTranslate = 0;
-        var CAROUSEL_STYLES = "\n    .progress-dots  {\n      text-align: center;\n      list-style: none;\n    }\n\n    .progress-dots > li {\n      border-radius: 50%;\n      background: white;\n      display: inline-block;\n      margin: 0 3px;\n      width: 10px;\n      height: 10px;\n      border: 1px solid black;\n    }\n\n    .progress-dots > li.active {\n      background: #45a2e2;\n    }\n\n    .card {\n      border-radius: 5px;\n      box-shadow: inset 0 0 1px black;\n      margin: 10px 0px;\n      float: left;\n      height: auto;\n      width: 80vw;\n      display: block;\n      background: white; \n      line-height: 150px;\n      font-size: 32px;\n      font-family: sans-serif;\n      text-align: center;\n    }\n    ";
+        var CAROUSEL_STYLES = "\n    .progress-dots  {\n      text-align: center;\n      list-style: none;\n    }\n\n    .progress-dots > li.active {\n      background: #45a2e2;\n    }\n\n    .progress-dots > li {\n      border-radius: 50%;\n      background: white;\n      display: inline-block;\n      margin: 0 3px;\n      width: 10px;\n      height: 10px;\n      border: 1px solid black;\n    }\n\n    .carousel-item {\n      float: left;\n    }\n    ";
         var carStyle = document.createElement('style');
         carStyle.appendChild(document.createTextNode(CAROUSEL_STYLES));
         var insertPoint;
@@ -127,10 +127,14 @@ var AyCarousel = (function () {
     AyCarousel.prototype.momentumScroll = function (stopPoint) {
         var _this = this;
         if (this.amplitude) {
-            var decelerationFactor = 1 + 1.5 * Math.max(0.8 - this.percentVisible(this.cards[this.index]), 0);
             var elapsed = Date.now() - this.timestamp;
-            var delta = -this.amplitude * Math.exp(-elapsed / (this.config.decelerationRate * decelerationFactor));
+            var delta = -this.amplitude * Math.exp(-elapsed / (this.config.decelerationRate));
             if (delta > stopPoint || delta < -stopPoint) {
+                var outOfBoundsLeft = this.target + delta > 0 + this.cardWidth;
+                var outOfBoundsRight = this.target + delta < -this.cardWidth * this.cards.length;
+                if (outOfBoundsLeft || outOfBoundsRight) {
+                    return this.snap(this.index);
+                }
                 this.translate(this.target + delta, 0);
                 window.requestAnimationFrame(function (_) { return _this.momentumScroll(stopPoint); });
             }
@@ -291,7 +295,7 @@ var AyCarousel = (function () {
             momentumSnapVelocityThreshold: 100,
             minCardScale: 0.9,
             snapSpeedConstant: 300,
-            heaviness: 0.9,
+            heaviness: 0.95,
             shrinkSpeed: 150,
             enableDots: true
         };

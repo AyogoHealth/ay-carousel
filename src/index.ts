@@ -35,6 +35,10 @@ export default class AyCarousel {
       list-style: none;
     }
 
+    .progress-dots > li.active {
+      background: #45a2e2;
+    }
+
     .progress-dots > li {
       border-radius: 50%;
       background: white;
@@ -45,23 +49,8 @@ export default class AyCarousel {
       border: 1px solid black;
     }
 
-    .progress-dots > li.active {
-      background: #45a2e2;
-    }
-
-    .card {
-      border-radius: 5px;
-      box-shadow: inset 0 0 1px black;
-      margin: 10px 0px;
+    .carousel-item {
       float: left;
-      height: auto;
-      width: 80vw;
-      display: block;
-      background: white; 
-      line-height: 150px;
-      font-size: 32px;
-      font-family: sans-serif;
-      text-align: center;
     }
     `
 
@@ -106,7 +95,7 @@ export default class AyCarousel {
       if(this.config.enableDots) {
         let dotContainer = document.createElement('ul');
         dotContainer.classList.add('progress-dots');
-        
+
         // Inserting before the carousel's nextSibling <=> Inserting after the carousel
         this.carouselParent.element.insertBefore(dotContainer, this.carousel.nextSibling);
 
@@ -205,12 +194,16 @@ export default class AyCarousel {
 
   momentumScroll(stopPoint) {
     if(this.amplitude) {
-      const decelerationFactor = 1 + 1.5*Math.max(0.8 - this.percentVisible(this.cards[this.index]), 0);
       let elapsed = Date.now() - this.timestamp;
 
-      const delta = -this.amplitude * Math.exp(-elapsed / (this.config.decelerationRate*decelerationFactor));
+      const delta = -this.amplitude * Math.exp(-elapsed / (this.config.decelerationRate));
 
       if(delta > stopPoint || delta < -stopPoint) {
+        const outOfBoundsLeft = this.target+delta > 0+this.cardWidth;
+        const outOfBoundsRight = this.target+delta < -this.cardWidth * this.cards.length;
+        if(outOfBoundsLeft || outOfBoundsRight) {
+          return this.snap(this.index);
+        }
         this.translate(this.target + delta, 0);
         window.requestAnimationFrame(_ => this.momentumScroll(stopPoint));
       } else {
@@ -377,7 +370,7 @@ export default class AyCarousel {
     // Rescale current card and 2 cards in either direction
     const from = Math.max(this.index-2 ,0);
     const to = Math.min(this.index+2, this.cards.length-1)
-
+ 
     for(let i = from; i<=to; i++) {
       let scaler = Math.max(this.percentVisible(this.cards[i]), this.config.minCardScale);
 
@@ -391,7 +384,7 @@ export default class AyCarousel {
     }
   }
 
-  calcOS(i) {    
+  calcOS(i) {
     // Width of container - Width of card = All the extra space
     // Divide this by 2 to get desired distance from edge on either side of card
     const edgeToCardDist = (this.carouselParent.width - this.cardWidth)/2;
@@ -404,10 +397,10 @@ export default class AyCarousel {
   setupConfig(config?) {
     const defaultConfig = {
       decelerationRate: 700, // How fast we decelerate
-      momentumSnapVelocityThreshold: 100, // Higher = snappier
+      momentumSnapVelocityThreshold: 100, // Velocity at which cards snap
       minCardScale: 0.9, // Smallest that partially-viewable cards can scale to
       snapSpeedConstant: 300, // Constant ms to be added to snapping duration
-      heaviness: 0.9, // Scale of 0 to 1, higher = less momentum
+      heaviness: 0.95, // Scale of 0 to 1, higher = less momentum after release
       shrinkSpeed: 150, // Speed of card scaling transition, in ms 
       enableDots: true  
     };
