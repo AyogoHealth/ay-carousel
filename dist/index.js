@@ -42,6 +42,7 @@ var AyCarousel = (function () {
             this.cards = this.carousel.children;
             this.rescale();
             this.cardWidth = this.cards[0].offsetWidth;
+            this.currentTranslate = 0;
             this.carousel.addEventListener('transitionend', function () {
                 _this.translating = false;
                 window.requestAnimationFrame(function (_) { return _this.rescale(); });
@@ -250,9 +251,11 @@ var AyCarousel = (function () {
         if (fn) {
             this.carousel.style['transitionTimingFunction'] = fn;
         }
-        this.setIndex(this.calculateIndex());
         if (length > 0) {
             this.translating = true;
+        }
+        else {
+            this.setIndex(this.calculateIndex());
         }
         window.requestAnimationFrame(function (_) { return _this.rescale(); });
     };

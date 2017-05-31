@@ -84,6 +84,7 @@ export default class AyCarousel {
       this.rescale();
 
       this.cardWidth = this.cards[0].offsetWidth;
+      this.currentTranslate = 0;
 
       this.carousel.addEventListener('transitionend', () => {
         this.translating = false;
@@ -223,7 +224,6 @@ export default class AyCarousel {
     // Keep track of the total distance moved right/left in the move
     this.totalMove.x += Math.abs(move.x - this.lastPos.x);
     this.totalMove.y += Math.abs(move.y - this.lastPos.y);
-    
     this.lastPos = {
       x: move.x,
       y: move.y
@@ -345,9 +345,12 @@ export default class AyCarousel {
     if(fn) {
       this.carousel.style['transitionTimingFunction'] = fn;
     }
-    this.setIndex(this.calculateIndex());
     if(length > 0) {
       this.translating = true;
+    } else {
+      // We only want to calculate the index if we're responding to a user drag
+      // i.e. a 0 length transition
+      this.setIndex(this.calculateIndex());
     }
     window.requestAnimationFrame(_ => this.rescale());
   }
