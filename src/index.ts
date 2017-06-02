@@ -16,7 +16,6 @@ export default class AyCarousel {
   totalMove : any;
   lastPos : any;
   dots : HTMLElement[] = [];
-  translating : boolean = false;
   amplitude;
   velocity;
   frame;
@@ -92,7 +91,6 @@ export default class AyCarousel {
       this.currentTranslate = 0;
 
       this.carousel.addEventListener('transitionend', () => {
-        this.translating = false;
         window.requestAnimationFrame(_ => this.rescale());
       })
       window.requestAnimationFrame(_ => this.rescale());
@@ -355,9 +353,7 @@ export default class AyCarousel {
     if(fn) {
       this.carousel.style['transitionTimingFunction'] = fn;
     }
-    if(length > 0) {
-      this.translating = true;
-    } else {
+    if(length == 0) {
       // We only want to calculate the index if we're responding to a user drag
       // i.e. a 0 length transition
       this.setIndex(this.calculateIndex());
@@ -392,7 +388,7 @@ export default class AyCarousel {
       this.cards[i].style['transitionDuration'] = `${this.config.shrinkSpeed}ms`;
     }
 
-    if(this.translating || this.velocity != 0) {
+    if(this.velocity != 0) {
       window.requestAnimationFrame(_ => this.rescale());
     }
   }

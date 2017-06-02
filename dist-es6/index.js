@@ -6,7 +6,6 @@ export default class AyCarousel {
         this.callbacks = {};
         this.index = 0;
         this.dots = [];
-        this.translating = false;
         this.timestamp = 0;
         this.previousTranslate = 0;
         let CAROUSEL_STYLES = `
@@ -61,7 +60,6 @@ export default class AyCarousel {
             this.cardWidth = this.cards[0].offsetWidth;
             this.currentTranslate = 0;
             this.carousel.addEventListener('transitionend', () => {
-                this.translating = false;
                 window.requestAnimationFrame(_ => this.rescale());
             });
             window.requestAnimationFrame(_ => this.rescale());
@@ -263,10 +261,7 @@ export default class AyCarousel {
         if (fn) {
             this.carousel.style['transitionTimingFunction'] = fn;
         }
-        if (length > 0) {
-            this.translating = true;
-        }
-        else {
+        if (length == 0) {
             this.setIndex(this.calculateIndex());
         }
         window.requestAnimationFrame(_ => this.rescale());
@@ -295,7 +290,7 @@ export default class AyCarousel {
             this.cards[i].style['transitionTimingFunction'] = 'ease';
             this.cards[i].style['transitionDuration'] = `${this.config.shrinkSpeed}ms`;
         }
-        if (this.translating || this.velocity != 0) {
+        if (this.velocity != 0) {
             window.requestAnimationFrame(_ => this.rescale());
         }
     }

@@ -37,7 +37,6 @@ var AyCarousel = (function () {
         this.callbacks = {};
         this.index = 0;
         this.dots = [];
-        this.translating = false;
         this.timestamp = 0;
         this.previousTranslate = 0;
         var CAROUSEL_STYLES = "\n    .progress-dots  {\n      text-align: center;\n      list-style: none;\n    }\n\n    .progress-dots > li.active {\n      background: #24282a;\n    }\n\n    .progress-dots > li {\n      border-radius: 50%;\n      display: inline-block;\n      margin: 0 4px;\n      width: 8px;\n      height: 9px;\n      border: 1px solid #24282a;\n    }\n\n    .carousel-item {\n      float: left;\n    }\n    ";
@@ -70,7 +69,6 @@ var AyCarousel = (function () {
             this.cardWidth = this.cards[0].offsetWidth;
             this.currentTranslate = 0;
             this.carousel.addEventListener('transitionend', function () {
-                _this.translating = false;
                 window.requestAnimationFrame(function (_) { return _this.rescale(); });
             });
             window.requestAnimationFrame(function (_) { return _this.rescale(); });
@@ -280,10 +278,7 @@ var AyCarousel = (function () {
         if (fn) {
             this.carousel.style['transitionTimingFunction'] = fn;
         }
-        if (length > 0) {
-            this.translating = true;
-        }
-        else {
+        if (length == 0) {
             this.setIndex(this.calculateIndex());
         }
         window.requestAnimationFrame(function (_) { return _this.rescale(); });
@@ -313,7 +308,7 @@ var AyCarousel = (function () {
             this.cards[i].style['transitionTimingFunction'] = 'ease';
             this.cards[i].style['transitionDuration'] = this.config.shrinkSpeed + "ms";
         }
-        if (this.translating || this.velocity != 0) {
+        if (this.velocity != 0) {
             window.requestAnimationFrame(function (_) { return _this.rescale(); });
         }
     };
