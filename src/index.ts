@@ -310,9 +310,11 @@ export default class AyCarousel {
 
     const ease = 'ease';
     const distance = Math.abs(this.currentTranslate - nextOffset);
-    
+
     const duration = Math.floor(distance*1.25) + this.config.snapSpeedConstant;
 
+    this.currentTranslate = nextOffset;
+    
     this.translate(nextOffset, duration, ease);
   }
 

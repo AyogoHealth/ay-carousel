@@ -242,6 +242,7 @@ var AyCarousel = (function () {
         var ease = 'ease';
         var distance = Math.abs(this.currentTranslate - nextOffset);
         var duration = Math.floor(distance * 1.25) + this.config.snapSpeedConstant;
+        this.currentTranslate = nextOffset;
         this.translate(nextOffset, duration, ease);
     };
     AyCarousel.prototype.ondragend = function (e) {
