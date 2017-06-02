@@ -1,5 +1,9 @@
 body {
-    background: #D1E39F;
+    background: -webkit-linear-gradient(#E3F0C0, #D1E39F);
+}
+
+html {
+	height: auto;
 }
 
 .page-wrapper {
@@ -25,16 +29,121 @@ nav {
   border-bottom: 1px solid grey;
 }
 
+.carousel {
+  margin-top: 20px;
+}
+
 .carousel-item {
-  height: auto;
-  width: 80vw;
+  height: 220px;
+  width: 75vw;
   display: block;
-  background: white; 
-  line-height: 150px;
-  font-size: 32px;
-  font-family: sans-serif;
-  text-align: center;
+
+  /*http://www.patternify.com/*/
+  background:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAYAAACNbyblAAAALElEQVQYV2NcuHzSf30jdQZkwHjh5s7/F8/dZECWAAuCVCFLwAWRJVAEYRIA2t0cY/pcFWQAAAAASUVORK5CYII=
+    ) repeat;
+
+  font-family: system-ui, -apple-system, -apple-system-font, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', sans-serif;
+  color: #353d39;
   border-radius: 5px;
-  box-shadow: inset 0 0 1px black;
+  box-shadow: inset 1px 1px 1px grey;
   margin: 10px 0px;
+  padding: 10px;
+}
+
+.carousel-item > * {
+    font-weight: 400;
+    line-height: 15px;
+    font-size: 14px;
+    user-select: none;
+    -webkit-user-drag: none;
+}
+
+.carousel-item > h2 {
+  font-size: 18px;
+  font-weight: bold;
+  text-align: left;
+  padding: 10px;
+}
+
+p {
+  padding: 10px 10px 10px 20px;
+}
+
+.carousel-item > a{
+  color: #353d39;
+  padding: 10px;
+  margin: 10px 0px 30px 0px;
+  display: inline-block;
+}
+
+.pill-button {
+  background: #f6e9cf;
+  padding: 10px;
+  width: auto;
+  display: inline-block;
+  border-radius: 500px;
+  box-shadow: 1px 1px 5px grey;
+  position: absolute;
+  bottom: -20px;
+  left: 20px;
+  font-size: 14px;
+}
+
+.progress-dots {
+  padding-top: 10px;
+}
+
+img {
+  max-width: 100%;
+  max-height: 100%;
+}
+
+.card {
+  height: auto;
+  width: 75vw;
+  background: white;
+  display: block;
+  font-family: system-ui, -apple-system, -apple-system-font, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', sans-serif;
+  color: #353d39;
+  border-radius: 5px;
+  box-shadow: 1px 1px 1px grey;
+  margin: 10px 0px;
+  padding: 10px;
+  display: inline-block;
+}
+
+.card > h2 {
+  font-size: 18px;
+  font-weight: bold;
+  text-align: left;
+  padding: 10px;
+}
+
+.card > * {
+  font-weight: 400;
+    line-height: 15px;
+    font-size: 16px;
+
+}
+p.details {
+  padding: 0px 10px 10px 20px;
+  font-weight: 500;
+  font-size: 14px;
+}
+
+p.rating {
+    padding: 10px 10px 0px 20px;
+    font-size: 14px;
+}
+
+.score {
+  float: left;
+}
+
+.donut {
+  height: 60px;
+  width: 60px;
+  margin: 10px;
+  float: left;
+  margin: 0 0 0 10px;
 }

@@ -9,25 +9,67 @@
     <script src="dist/index.js"></script>
   </head>
   <body>
-    <nav><a href="mobile.html">VIEW IN A MOBILE FRAME</a></nav>
     <div class="page-wrapper">
       <main>
-        <section id="carousel">
-          <div class="carousel-item">0</div>
-          <div class="carousel-item">1</div>
-          <div class="carousel-item">2</div>
-          <div class="carousel-item">3</div>
-          <div class="carousel-item">4</div>
-          <div class="carousel-item">5</div>
-          <div class="carousel-item">6</div>
-          <div class="carousel-item">7</div>
-          <div class="carousel-item">8</div>
+        <section class="importance">
+          <div class="card">
+            <h2>Importance</h2>
+            <div class="donut">
+              <svg width="100%" height="100%" viewBox="0 0 42 42" class="donut">
+                <filter id="drop-shadow" x="-50%" y="-50%" width="200%" height="200%">
+                  <feOffset dx="9" dy="9" in="SourceAlpha"/>
+                  <feGaussianBlur stdDeviation="5"/>
+                </filter>
+                <!-- r =  C/(2π) where C = 100, this allows us to scale by % -->
+                <circle class="donut-ring" cx="21" cy="21" r="15.91549430918954" fill="transparent" stroke="#d2d3d4" stroke-width="7"></circle>
+            
+                <circle class="donut-segment" cx="21" cy="21" r="15.91549430918954" fill="transparent" stroke="#c2e16d" stroke-width="7" stroke-dasharray="70 30" stroke-dashoffset="25"></circle>
+              </svg>
+            </div>
+            <div class="score">
+              <p class="rating">7/10</p>
+              <p class="details">Very Important</p>
+            </div>
+          </div>
+        </section>
+        <section class="carousel">
+          <div class="carousel-item">
+            <h2>Readiness</h2>
+            <p>How ready are you to complete this goal? If you don’t feel ready, talk with your nurse to make an action plan.</p>
+            <a href="#">Learn more about readiness ></a>
+            <div class="pill-button">+ Add Readiness</div>
+          </div>
+        </section>
+        <section class="carousel">
+          <div class="carousel-item">
+            <h2>Upcoming Milestones</h2>
+            <p>What are some milestones you will complete with this goal?</p>
+            <p>Milestones will help you stay on track, and you can check them out as you go!</p>
+            <a href="#">Learn more about milestones ></a>
+            <div class="pill-button">+ Add Milestones</div>
+          </div>
+          <div class="carousel-item">
+            <h2>Completed Milestones</h2>
+            <p>Once you have completed a milestone, it will be saved here.</p>
+            <a href="#">Learn more about milestones ></a>
+          </div>
+        </section>
+        <section class="carousel">
+          <div class="carousel-item">
+            <h2>In Progress Tasks</h2>
+            <p>Your tasks live on your home page. These are small things you can accomplish quickly. Once you complete tasks they will appear here!</p>
+            <a href="#">Learn more about tasks ></a>
+          </div>
+          <div class="carousel-item">
+            <h2>Completed Tasks</h2>
+            <p>Your tasks live on your home page. These are small things you can accomplish quickly. Once you complete tasks they will appear here!</p>
+          </div>
         </section>
       </main>
     </div>
     <script>
-      var carousel = document.getElementById('carousel');
-      new Carousel(carousel);
+      var carousels = document.querySelectorAll('.carousel');
+      carousels.forEach(function(carousel) { new Carousel(carousel); });
     </script>
   </body>
 </html>
