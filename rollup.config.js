@@ -8,7 +8,8 @@ export default {
     banner: '/*! Copyright 2017 Ayogo Health Inc. */',
     sourceMap: true,
     globals: {
-        'angular': 'angular'
+        'angular': 'angular',
+        'utilities': 'utilities'
     },
     plugins: [
         cleanup(),
