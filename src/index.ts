@@ -1,11 +1,11 @@
 import {assign} from './utilities';
 
 export default class AyCarousel {
-  offset : any;
+  offset;
   startX : number = 0;
   startY : number = 0;
-  delta : any;
-  position : any;
+  delta;
+  position;
   currentTranslate : number;
   lastTranslate : number;
   callbacks : any = {};
@@ -13,8 +13,8 @@ export default class AyCarousel {
   cardWidth : number;
   index : number = 0;
   carousel : HTMLElement;
-  totalMove : any;
-  lastPos : any;
+  totalMove;
+  lastPos;
   dots : HTMLElement[] = [];
   amplitude;
   velocity;
