@@ -1,5 +1,4 @@
 export const assign = function (target, ...args) {
-    'use strict';
     args;
     if (target == null) {
         throw new TypeError('Cannot convert undefined or null to object');

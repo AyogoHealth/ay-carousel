@@ -30,7 +30,7 @@ export default class AyCarousel {
   carouselParent;
 
   constructor(carousel : HTMLElement, config?) {
-    let CAROUSEL_STYLES = `
+    const CAROUSEL_STYLES = `
     .progress-dots  {
       text-align: center;
       list-style: none;
@@ -51,10 +51,12 @@ export default class AyCarousel {
 
     .carousel-item {
       float: left;
+      width: 75vw;
+      display: block;
     }
     `
-
-    let carStyle = document.createElement('style');
+    
+    const carStyle = document.createElement('style');
     carStyle.appendChild(document.createTextNode(CAROUSEL_STYLES));
 
     let insertPoint : HTMLElement | null;
@@ -92,14 +94,14 @@ export default class AyCarousel {
 
       this.carousel.addEventListener('transitionend', () => {
         window.requestAnimationFrame(_ => this.rescale());
-      })
+      });
       window.requestAnimationFrame(_ => this.rescale());
       window.addEventListener('resize', _ => this.handleResize());
 
       if(this.config.enableDots && this.cards.length > 1) {
-        let dotContainer = document.createElement('ul');
+        const dotContainer = document.createElement('ul');
         dotContainer.classList.add('progress-dots');
-        
+
         // Inserting before the carousel's nextSibling <=> Inserting after the carousel
         this.carouselParent.element.insertBefore(dotContainer, this.carousel.nextSibling);
 
@@ -121,9 +123,7 @@ export default class AyCarousel {
     
     this.cardWidth = this.cards[0].offsetWidth;
 
-    let carouselParent;
-    carouselParent = this.carousel.parentElement
-
+    let carouselParent = this.carousel.parentElement;
 
     if(carouselParent) {
       this.carouselParent = {
@@ -204,7 +204,7 @@ export default class AyCarousel {
 
   momentumScroll(stopPoint) {
     if(this.amplitude) {
-      let elapsed = Date.now() - this.timestamp;
+      const elapsed = Date.now() - this.timestamp;
 
       const delta = -this.amplitude * Math.exp(-elapsed / (this.config.decelerationRate));
 
@@ -266,7 +266,7 @@ export default class AyCarousel {
       cardLeft = this.cards[this.index].getBoundingClientRect().left
     }
 
-    let cardMidpoint = (cardLeft + cardLeft + this.cardWidth) / 2;
+    const cardMidpoint = (cardLeft + cardLeft + this.cardWidth) / 2;
     
     if(cardMidpoint <= 0) {
       // If card midpoint is close enough to left edge, decrement index
@@ -323,7 +323,7 @@ export default class AyCarousel {
     const duration = Math.floor(distance*1.25) + this.config.snapSpeedConstant;
 
     this.currentTranslate = nextOffset;
-    
+
     this.translate(nextOffset, duration, ease);
   }
 
@@ -373,7 +373,7 @@ export default class AyCarousel {
   }
 
   percentVisible(card : HTMLElement) {
-    let cardRect = card.getBoundingClientRect();
+    const cardRect = card.getBoundingClientRect();
 
     if((cardRect.left < 0 && cardRect.right < 0) || cardRect.left > this.viewportWidth) {
       return 0;
@@ -392,7 +392,7 @@ export default class AyCarousel {
     const to = Math.min(this.index+2, this.cards.length-1)
  
     for(let i = from; i<=to; i++) {
-      let scaler = Math.min(Math.max(this.percentVisible(this.cards[i])+0.25, this.config.minCardScale), 1);
+      const scaler = Math.min(Math.max(this.percentVisible(this.cards[i])+0.25, this.config.minCardScale), 1);
 
       this.cards[i].style['transform'] = `scale(${scaler})`;
       this.cards[i].style['transitionTimingFunction'] = 'ease';
@@ -416,8 +416,8 @@ export default class AyCarousel {
 
   setupConfig(config?) {
     const defaultConfig = {
-      decelerationRate: 700, // How fast we decelerate
-      momentumSnapVelocityThreshold: 100, // Velocity at which cards snap
+      decelerationRate: 900, // How fast we decelerate
+      momentumSnapVelocityThreshold: 150, // Velocity at which cards snap
       minCardScale: 0.9, // Smallest that partially-viewable cards can scale to
       snapSpeedConstant: 300, // Constant ms to be added to snapping duration
       heaviness: 0.95, // Scale of 0 to 1, higher = less momentum after release

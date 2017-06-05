@@ -1,6 +1,5 @@
 // Roughly taken from MDN
 export const assign = function(target, ...args) { // .length of function is 2
-  'use strict';
   args;
   if (target == null) { // TypeError if undefined or null
     throw new TypeError('Cannot convert undefined or null to object');

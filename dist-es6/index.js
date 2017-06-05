@@ -8,7 +8,7 @@ export default class AyCarousel {
         this.dots = [];
         this.timestamp = 0;
         this.previousTranslate = 0;
-        let CAROUSEL_STYLES = `
+        const CAROUSEL_STYLES = `
     .progress-dots  {
       text-align: center;
       list-style: none;
@@ -29,9 +29,11 @@ export default class AyCarousel {
 
     .carousel-item {
       float: left;
+      width: 75vw;
+      display: block;
     }
     `;
-        let carStyle = document.createElement('style');
+        const carStyle = document.createElement('style');
         carStyle.appendChild(document.createTextNode(CAROUSEL_STYLES));
         let insertPoint;
         if (insertPoint = document.querySelector('link')) {
@@ -65,7 +67,7 @@ export default class AyCarousel {
             window.requestAnimationFrame(_ => this.rescale());
             window.addEventListener('resize', _ => this.handleResize());
             if (this.config.enableDots && this.cards.length > 1) {
-                let dotContainer = document.createElement('ul');
+                const dotContainer = document.createElement('ul');
                 dotContainer.classList.add('progress-dots');
                 this.carouselParent.element.insertBefore(dotContainer, this.carousel.nextSibling);
                 for (let i = 0; i < this.cards.length; i++) {
@@ -73,7 +75,8 @@ export default class AyCarousel {
                     dotContainer.insertAdjacentElement('beforeend', this.dots[i]);
                     this.dots[i].addEventListener('touchstart', _ => this.ondotclick(i));
                     this.dots[i].addEventListener('click', _ => this.ondotclick(i));
-                    this.dots[i].tabIndex = i + 1;
+                    this.dots[i].addEventListener('keydown', e => this.ondotkey(e, i));
+                    this.dots[i].tabIndex = 0;
                 }
                 this.dots[this.index].className = 'active';
             }
@@ -82,8 +85,7 @@ export default class AyCarousel {
     handleResize() {
         this.viewportWidth = window.innerWidth;
         this.cardWidth = this.cards[0].offsetWidth;
-        let carouselParent;
-        carouselParent = this.carousel.parentElement;
+        let carouselParent = this.carousel.parentElement;
         if (carouselParent) {
             this.carouselParent = {
                 element: carouselParent,
@@ -140,7 +142,7 @@ export default class AyCarousel {
     }
     momentumScroll(stopPoint) {
         if (this.amplitude) {
-            let elapsed = Date.now() - this.timestamp;
+            const elapsed = Date.now() - this.timestamp;
             const delta = -this.amplitude * Math.exp(-elapsed / (this.config.decelerationRate));
             if (delta > stopPoint || delta < -stopPoint) {
                 const outOfBoundsLeft = this.target + delta > 0;
@@ -189,7 +191,7 @@ export default class AyCarousel {
         if (!cardLeft) {
             cardLeft = this.cards[this.index].getBoundingClientRect().left;
         }
-        let cardMidpoint = (cardLeft + cardLeft + this.cardWidth) / 2;
+        const cardMidpoint = (cardLeft + cardLeft + this.cardWidth) / 2;
         if (cardMidpoint <= 0) {
             return this.index + 1;
         }
@@ -203,6 +205,13 @@ export default class AyCarousel {
     ondotclick(i) {
         this.setIndex(i);
         this.snap(this.index);
+    }
+    ondotkey(e, i) {
+        if (e.keyCode === 32 || e.keyCode === 13) {
+            e.preventDefault();
+            e.stopPropagation();
+            this.ondotclick(i);
+        }
     }
     setIndex(index) {
         const oldIndex = this.index;
@@ -268,7 +277,7 @@ export default class AyCarousel {
         window.requestAnimationFrame(_ => this.rescale());
     }
     percentVisible(card) {
-        let cardRect = card.getBoundingClientRect();
+        const cardRect = card.getBoundingClientRect();
         if ((cardRect.left < 0 && cardRect.right < 0) || cardRect.left > this.viewportWidth) {
             return 0;
         }
@@ -286,7 +295,7 @@ export default class AyCarousel {
         const from = Math.max(this.index - 2, 0);
         const to = Math.min(this.index + 2, this.cards.length - 1);
         for (let i = from; i <= to; i++) {
-            let scaler = Math.min(Math.max(this.percentVisible(this.cards[i]) + 0.25, this.config.minCardScale), 1);
+            const scaler = Math.min(Math.max(this.percentVisible(this.cards[i]) + 0.25, this.config.minCardScale), 1);
             this.cards[i].style['transform'] = `scale(${scaler})`;
             this.cards[i].style['transitionTimingFunction'] = 'ease';
             this.cards[i].style['transitionDuration'] = `${this.config.shrinkSpeed}ms`;
@@ -301,8 +310,8 @@ export default class AyCarousel {
     }
     setupConfig(config) {
         const defaultConfig = {
-            decelerationRate: 700,
-            momentumSnapVelocityThreshold: 100,
+            decelerationRate: 900,
+            momentumSnapVelocityThreshold: 150,
             minCardScale: 0.9,
             snapSpeedConstant: 300,
             heaviness: 0.95,

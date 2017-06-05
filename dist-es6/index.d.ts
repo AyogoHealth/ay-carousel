@@ -34,6 +34,7 @@ export default class AyCarousel {
     ondragmove(e: any): void;
     calculateIndex(position?: any): number;
     ondotclick(i: any): void;
+    ondotkey(e: any, i: any): void;
     setIndex(index: number): void;
     snap(nextIndex?: number, direction?: string): void;
     ondragend(e: any): void;
