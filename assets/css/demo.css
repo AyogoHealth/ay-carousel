@@ -31,12 +31,11 @@ nav {
 
 .carousel {
   margin-top: 20px;
+  float: left;
 }
 
 .carousel-item {
-  height: 220px;
-  width: 75vw;
-  display: block;
+  float: left;
 
   /*http://www.patternify.com/*/
   background:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAYAAACNbyblAAAALElEQVQYV2NcuHzSf30jdQZkwHjh5s7/F8/dZECWAAuCVCFLwAWRJVAEYRIA2t0cY/pcFWQAAAAASUVORK5CYII=
@@ -46,7 +45,7 @@ nav {
   color: #353d39;
   border-radius: 5px;
   box-shadow: inset 1px 1px 1px grey;
-  margin: 10px 0px;
+  margin: 10px 0px 30px 0px;
   padding: 10px;
 }
 

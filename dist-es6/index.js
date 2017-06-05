@@ -11,7 +11,6 @@ export default class AyCarousel {
         const CAROUSEL_STYLES = `
     .progress-dots  {
       text-align: center;
-      list-style: none;
     }
 
     .progress-dots > li.active {
@@ -21,16 +20,14 @@ export default class AyCarousel {
     .progress-dots > li {
       border-radius: 50%;
       display: inline-block;
-      margin: 0 4px;
-      width: 8px;
-      height: 9px;
+      margin: 0 5px;
+      width: 7px;
+      height: 8px;
       border: 1px solid #24282a;
     }
 
     .carousel-item {
-      float: left;
       width: 75vw;
-      display: block;
     }
     `;
         const carStyle = document.createElement('style');
@@ -51,7 +48,7 @@ export default class AyCarousel {
         if (carousel) {
             this.config = this.setupConfig(config);
             this.carousel = carousel;
-            this.carousel.setAttribute('style', `position: relative; width: 30000px; display: inline-block;`);
+            this.carousel.setAttribute('style', `position: relative; width: 30000px; display: flex; align-items: stretch;`);
             this.cards = this.carousel.children;
             this.handleResize();
             if (this.cards.length > 1) {

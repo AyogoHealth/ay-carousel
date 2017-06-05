@@ -38,7 +38,7 @@ var AyCarousel = (function () {
         this.dots = [];
         this.timestamp = 0;
         this.previousTranslate = 0;
-        var CAROUSEL_STYLES = "\n    .progress-dots  {\n      text-align: center;\n      list-style: none;\n    }\n\n    .progress-dots > li.active {\n      background: #24282a;\n    }\n\n    .progress-dots > li {\n      border-radius: 50%;\n      display: inline-block;\n      margin: 0 4px;\n      width: 8px;\n      height: 9px;\n      border: 1px solid #24282a;\n    }\n\n    .carousel-item {\n      float: left;\n      width: 75vw;\n      display: block;\n    }\n    ";
+        var CAROUSEL_STYLES = "\n    .progress-dots  {\n      text-align: center;\n    }\n\n    .progress-dots > li.active {\n      background: #24282a;\n    }\n\n    .progress-dots > li {\n      border-radius: 50%;\n      display: inline-block;\n      margin: 0 5px;\n      width: 7px;\n      height: 8px;\n      border: 1px solid #24282a;\n    }\n\n    .carousel-item {\n      width: 75vw;\n    }\n    ";
         var carStyle = document.createElement('style');
         carStyle.appendChild(document.createTextNode(CAROUSEL_STYLES));
         var insertPoint;
@@ -57,7 +57,7 @@ var AyCarousel = (function () {
         if (carousel) {
             this.config = this.setupConfig(config);
             this.carousel = carousel;
-            this.carousel.setAttribute('style', "position: relative; width: 30000px; display: inline-block;");
+            this.carousel.setAttribute('style', "position: relative; width: 30000px; display: flex; align-items: stretch;");
             this.cards = this.carousel.children;
             this.handleResize();
             if (this.cards.length > 1) {
