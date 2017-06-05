@@ -108,7 +108,8 @@ export default class AyCarousel {
           dotContainer.insertAdjacentElement('beforeend', this.dots[i]);
           this.dots[i].addEventListener('touchstart', _ => this.ondotclick(i));
           this.dots[i].addEventListener('click', _ => this.ondotclick(i));
-          this.dots[i].tabIndex = i+1;
+          this.dots[i].addEventListener('keydown', e => this.ondotkey(e, i));
+          this.dots[i].tabIndex = 0;
         }
         this.dots[this.index].className = 'active';
       }
@@ -281,6 +282,14 @@ export default class AyCarousel {
   ondotclick(i) {
     this.setIndex(i);
     this.snap(this.index);
+  }
+
+  ondotkey(e, i) {
+    if(e.keyCode === 32 || e.keyCode === 13) {
+      e.preventDefault();
+      e.stopPropagation();
+      this.ondotclick(i);
+    }
   }
 
   setIndex(index: number) {
