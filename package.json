@@ -1,9 +1,14 @@
 {
-  "name": "ay-carousel",
+  "name": "@ayogohealth/ay-carousel",
   "copyright": "Copyright 2017 Ayogo Health Inc.",
-  "author": "Ayogo Health Inc.",
-  "version": "0.0.1",
-  "description": "Demo/PoC for different styles of mobile carousels",
+  "author": "Ayogo Health Inc. <info@ayogo.com>",
+  "homepage": "http://ayogo.com",
+  "version": "1.0.0",
+  "description": "Carousel Component",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AyogoHealth/ay-carousel.git"
+  },
   "main": "dist/index.js",
   "devDependencies": {
     "http-server": "^0.10.0",
