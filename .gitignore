@@ -11,6 +11,7 @@
 *.gem
 *.swp
 Gemfile.lock
+package-lock.json
 npm-debug.log
 coverage
 demo/generated/*
