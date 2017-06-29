@@ -9,9 +9,13 @@ angular.module(modName, [])
 .directive('carousel', function() {
   return {
     restrict: 'E',
+    scope: {
+      config: '=',
+      initialIndex: '@'
+    },
     link: function($scope, $element, attrs) {
       let el = $element[0] as HTMLElement;
-      let carousel = new AyCarousel(el, attrs.config);
+      let carousel = new AyCarousel(el, attrs.config, attrs.initialIndex);
 
       let mutationObserver = new MutationObserver(() => {
         carousel.updateItems();

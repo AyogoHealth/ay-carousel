@@ -30,6 +30,7 @@ export default class AyCarousel {
   offset;
   startX : number = 0;
   startY : number = 0;
+  initialIndex : number;
   delta;
   position;
   currentTranslate : number;
@@ -56,13 +57,13 @@ export default class AyCarousel {
   carouselParent;
   destroyed : boolean = false;
 
-  constructor(carousel : HTMLElement, config?) {
+  constructor(carousel : HTMLElement, config?, initialIndex=0) {
     if (! carousel) {
       return;
     }
 
     this.config = this.setupConfig(config);
-
+    this.initialIndex = initialIndex;
     this.carousel = carousel;
 
     if (this.config.includeStyle) {
@@ -105,8 +106,10 @@ export default class AyCarousel {
   }
 
   updateItems() {
-    this.handleResize();
+    this.setIndex(this.initialIndex);
+    this.handleResize(false);
     this.rescale();
+    this.translate(this.calcOS(this.index), 0, undefined, false);
 
     this.currentTranslate = 0;
 
@@ -134,7 +137,7 @@ export default class AyCarousel {
     }
   }
 
-  handleResize() {
+  handleResize(snap : boolean = true) {
     let carouselParent = this.carousel.parentElement;
 
     if(carouselParent) {
@@ -151,7 +154,9 @@ export default class AyCarousel {
 
     this.viewportWidth = window.innerWidth;
     this.cardWidth = this.cards[0].offsetWidth;
-    this.snap(this.index);
+    if (snap) {
+      this.snap(this.index);
+    }
   }
 
   onDragStart(e) {
@@ -287,7 +292,7 @@ export default class AyCarousel {
   calculateIndex(position?) {
     let cardLeft = position;
     if(!cardLeft) {
-      cardLeft = this.cards[this.index].getBoundingClientRect().left
+      cardLeft = this.cards[this.index].getBoundingClientRect().left;
     }
 
     const cardMidpoint = (cardLeft + cardLeft + this.cardWidth) / 2;
@@ -307,6 +312,7 @@ export default class AyCarousel {
     let i = this.dots.indexOf(e.target);
     this.setIndex(i);
     this.snap(this.index);
+    this.rescale();
   }
 
   onDotKey(e) {
@@ -316,6 +322,7 @@ export default class AyCarousel {
       e.stopPropagation();
       this.setIndex(i);
       this.snap(this.index);
+      this.rescale();
     }
   }
 
@@ -326,7 +333,7 @@ export default class AyCarousel {
     this.index = Math.max(Math.min(index, this.cards.length-1), 0);
 
     // Update dots, TODO: animate this
-    if(oldIndex !== this.index) {
+    if (oldIndex !== this.index && this.dots && this.dots[oldIndex] && this.dots[this.index]) {
       this.dots[oldIndex].className = '';
       this.dots[this.index].className = 'active';
     }
@@ -384,14 +391,14 @@ export default class AyCarousel {
     }
   }
 
-  translate(x : number, length : number, fn? : string) {
+  translate(x : number, length : number, fn? : string, updateIndex : boolean = true) {
     this.carousel.style['transition'] = 'transform';
     this.carousel.style['transitionDuration'] = `${length}ms`;
     this.carousel.style['transform'] = `translate3d(${x}px,0px,0px)`;
     if(fn) {
       this.carousel.style['transitionTimingFunction'] = fn;
     }
-    if(length == 0) {
+    if(length === 0 && updateIndex) {
       // We only want to calculate the index if we're responding to a user drag
       // i.e. a 0 length transition
       this.setIndex(this.calculateIndex());
