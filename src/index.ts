@@ -95,11 +95,15 @@ export default class AyCarousel {
     this.callbacks.onDotClick = this.onDotClick.bind(this);
     this.callbacks.onDotKey = this.onDotKey.bind(this);
     this.callbacks.onWindowResize = this.handleResize.bind(this);
-    this.callbacks.onTransitionEnd = this.rescale.bind(this);
+    this.callbacks.onTransitionEnd = (evt : TransitionEvent) => {
+      if (evt.target === this.carousel) {
+        this.rescale();
+      }
+    };
 
     this.carousel.addEventListener('touchstart', this.callbacks.onDragStart);
     this.carousel.addEventListener('mousedown', this.callbacks.onDragStart);
-    this.carousel.addEventListener('transitionEnd', this.callbacks.onTransitionEnd);
+    this.carousel.addEventListener('transitionend', this.callbacks.onTransitionEnd);
     window.addEventListener('resize', this.callbacks.onWindowResize);
     
     this.updateItems();
@@ -312,7 +316,6 @@ export default class AyCarousel {
     let i = this.dots.indexOf(e.target);
     this.setIndex(i);
     this.snap(this.index);
-    this.rescale();
   }
 
   onDotKey(e) {
@@ -322,7 +325,6 @@ export default class AyCarousel {
       e.stopPropagation();
       this.setIndex(i);
       this.snap(this.index);
-      this.rescale();
     }
   }
 
@@ -456,7 +458,7 @@ export default class AyCarousel {
     this.removeDots(true);
     this.carousel.removeEventListener('touchstart', this.callbacks.onDragStart);
     this.carousel.removeEventListener('mousedown', this.callbacks.onDragStart);
-    this.carousel.removeEventListener('transitionEnd', this.callbacks.onTransitionEnd);
+    this.carousel.removeEventListener('transitionend', this.callbacks.onTransitionEnd);
     window.removeEventListener('resize', this.callbacks.onWindowResize);
     this.destroyed = true;
   }
