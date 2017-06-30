@@ -31,6 +31,7 @@ export default class AyCarousel {
   startX : number = 0;
   startY : number = 0;
   initialIndex : number;
+  initialIndexSetOnce : boolean = false;
   delta;
   position;
   currentTranslate : number;
@@ -110,7 +111,11 @@ export default class AyCarousel {
   }
 
   updateItems() {
-    this.setIndex(this.initialIndex);
+    if (this.cards.length > 0 && !this.initialIndexSetOnce) {
+      this.setIndex(this.initialIndex);
+      this.initialIndexSetOnce = true;
+    }
+
     this.handleResize(false);
     this.rescale();
     this.translate(this.calcOS(this.index), 0, undefined, false);
