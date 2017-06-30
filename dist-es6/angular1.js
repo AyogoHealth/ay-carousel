@@ -6,9 +6,21 @@ angular.module(modName, [])
     .directive('carousel', function () {
     return {
         restrict: 'E',
-        link: function (_$scope, $element, attrs) {
+        scope: {
+            config: '=',
+            initialIndex: '@'
+        },
+        link: function ($scope, $element, attrs) {
             let el = $element[0];
-            new AyCarousel(el, attrs.config);
+            let carousel = new AyCarousel(el, attrs.config, attrs.initialIndex);
+            let mutationObserver = new MutationObserver(() => {
+                carousel.updateItems();
+            });
+            mutationObserver.observe(el, { childList: true });
+            $scope.$on('$destroy', () => {
+                mutationObserver.disconnect();
+                carousel.cleanUp();
+            });
         }
     };
 });

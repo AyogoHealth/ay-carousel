@@ -1,87 +1,113 @@
 import { assign } from './utilities';
+const CAROUSEL_STYLES = `
+  .progress-dots  {
+    text-align: center;
+  }
+
+  .progress-dots > li.active {
+    background: #24282a;
+  }
+
+  .progress-dots > li {
+    border-radius: 50%;
+    display: inline-block;
+    margin: 0 5px;
+    width: 8px;
+    height: 8px;
+    border: 1px solid #24282a;
+  }
+
+  .carousel-item {
+    width: 75vw;
+  }
+`;
 export default class AyCarousel {
-    constructor(carousel, config) {
+    constructor(carousel, config, initialIndex = 0) {
         this.startX = 0;
         this.startY = 0;
+        this.initialIndexSetOnce = false;
         this.callbacks = {};
         this.index = 0;
         this.dots = [];
         this.timestamp = 0;
         this.previousTranslate = 0;
-        const CAROUSEL_STYLES = `
-    .progress-dots  {
-      text-align: center;
-    }
-
-    .progress-dots > li.active {
-      background: #24282a;
-    }
-
-    .progress-dots > li {
-      border-radius: 50%;
-      display: inline-block;
-      margin: 0 5px;
-      width: 7px;
-      height: 8px;
-      border: 1px solid #24282a;
-    }
-
-    .carousel-item {
-      width: 75vw;
-    }
-    `;
-        const carStyle = document.createElement('style');
-        carStyle.appendChild(document.createTextNode(CAROUSEL_STYLES));
-        let insertPoint;
-        if (insertPoint = document.querySelector('link')) {
-            insertPoint.parentNode.insertBefore(carStyle, insertPoint);
+        this.destroyed = false;
+        if (!carousel) {
+            return;
         }
-        else if (insertPoint = document.querySelector('style')) {
-            insertPoint.parentNode.insertBefore(carStyle, insertPoint);
+        this.config = this.setupConfig(config);
+        this.initialIndex = initialIndex;
+        this.carousel = carousel;
+        if (this.config.includeStyle) {
+            if (!AyCarousel.documentStyleAdded) {
+                const carStyle = document.createElement('style');
+                carStyle.appendChild(document.createTextNode(CAROUSEL_STYLES));
+                let insertPoint;
+                if (insertPoint = document.querySelector('link')) {
+                    insertPoint.parentNode.insertBefore(carStyle, insertPoint);
+                }
+                else if (insertPoint = document.querySelector('style')) {
+                    insertPoint.parentNode.insertBefore(carStyle, insertPoint);
+                }
+                else if (insertPoint = document.querySelector('head')) {
+                    insertPoint.appendChild(carStyle);
+                }
+                else {
+                    document.appendChild(carStyle);
+                }
+                AyCarousel.documentStyleAdded = true;
+            }
+            this.carousel.setAttribute('style', `position: relative; width: 30000px; display: flex; align-items: stretch;`);
         }
-        else if (insertPoint = document.querySelector('head')) {
-            insertPoint.appendChild(carStyle);
+        this.cards = this.carousel.children;
+        this.callbacks.onDragStart = this.onDragStart.bind(this);
+        this.callbacks.onDragMove = this.onDragMove.bind(this);
+        this.callbacks.onDragEnd = this.onDragEnd.bind(this);
+        this.callbacks.onDotClick = this.onDotClick.bind(this);
+        this.callbacks.onDotKey = this.onDotKey.bind(this);
+        this.callbacks.onWindowResize = this.handleResize.bind(this);
+        this.callbacks.onTransitionEnd = (evt) => {
+            if (evt.target === this.carousel) {
+                this.rescale();
+            }
+        };
+        this.carousel.addEventListener('touchstart', this.callbacks.onDragStart);
+        this.carousel.addEventListener('mousedown', this.callbacks.onDragStart);
+        this.carousel.addEventListener('transitionend', this.callbacks.onTransitionEnd);
+        window.addEventListener('resize', this.callbacks.onWindowResize);
+        this.updateItems();
+    }
+    updateItems() {
+        if (this.cards.length > 0 && !this.initialIndexSetOnce) {
+            this.setIndex(this.initialIndex);
+            this.initialIndexSetOnce = true;
+        }
+        this.handleResize(false);
+        this.rescale();
+        this.translate(this.calcOS(this.index), 0, undefined, false);
+        this.currentTranslate = 0;
+        window.requestAnimationFrame(_ => this.rescale());
+        if (this.dotContainer) {
+            this.removeDots(false);
         }
         else {
-            document.appendChild(carStyle);
+            this.dotContainer = document.createElement('ul');
+            this.dotContainer.classList.add('progress-dots');
+            this.carouselParent.element.insertBefore(this.dotContainer, this.carousel.nextSibling);
         }
-        if (carousel) {
-            this.config = this.setupConfig(config);
-            this.carousel = carousel;
-            this.carousel.setAttribute('style', `position: relative; width: 30000px; display: flex; align-items: stretch;`);
-            this.cards = this.carousel.children;
-            this.handleResize();
-            if (this.cards.length > 1) {
-                this.carousel.addEventListener('touchstart', e => this.ondragstart(e));
-                this.carousel.addEventListener('mousedown', e => this.ondragstart(e));
+        if (this.config.enableDots && this.cards.length > 1) {
+            for (let i = 0; i < this.cards.length; i++) {
+                this.dots.push(document.createElement('li'));
+                this.dotContainer.insertAdjacentElement('beforeend', this.dots[i]);
+                this.dots[i].addEventListener('touchstart', this.callbacks.onDotClick);
+                this.dots[i].addEventListener('click', this.callbacks.onDotClick);
+                this.dots[i].addEventListener('keydown', this.callbacks.onDotKey);
+                this.dots[i].tabIndex = 0;
             }
-            this.rescale();
-            this.cardWidth = this.cards[0].offsetWidth;
-            this.currentTranslate = 0;
-            this.carousel.addEventListener('transitionend', () => {
-                window.requestAnimationFrame(_ => this.rescale());
-            });
-            window.requestAnimationFrame(_ => this.rescale());
-            window.addEventListener('resize', _ => this.handleResize());
-            if (this.config.enableDots && this.cards.length > 1) {
-                const dotContainer = document.createElement('ul');
-                dotContainer.classList.add('progress-dots');
-                this.carouselParent.element.insertBefore(dotContainer, this.carousel.nextSibling);
-                for (let i = 0; i < this.cards.length; i++) {
-                    this.dots.push(document.createElement('li'));
-                    dotContainer.insertAdjacentElement('beforeend', this.dots[i]);
-                    this.dots[i].addEventListener('touchstart', _ => this.ondotclick(i));
-                    this.dots[i].addEventListener('click', _ => this.ondotclick(i));
-                    this.dots[i].addEventListener('keydown', e => this.ondotkey(e, i));
-                    this.dots[i].tabIndex = 0;
-                }
-                this.dots[this.index].className = 'active';
-            }
+            this.dots[this.index].className = 'active';
         }
     }
-    handleResize() {
-        this.viewportWidth = window.innerWidth;
-        this.cardWidth = this.cards[0].offsetWidth;
+    handleResize(snap = true) {
         let carouselParent = this.carousel.parentElement;
         if (carouselParent) {
             this.carouselParent = {
@@ -90,9 +116,19 @@ export default class AyCarousel {
                 marginLeft: parseInt(window.getComputedStyle(carouselParent).marginLeft, 0)
             };
         }
-        this.snap(this.index);
+        if (this.cards.length === 0) {
+            return;
+        }
+        this.viewportWidth = window.innerWidth;
+        this.cardWidth = this.cards[0].offsetWidth;
+        if (snap) {
+            this.snap(this.index);
+        }
     }
-    ondragstart(e) {
+    onDragStart(e) {
+        if (this.cards.length < 2) {
+            return;
+        }
         const touches = e.touches ? e.touches[0] : e;
         const { pageX, pageY } = touches;
         const boundingRect = this.cards[this.index].getBoundingClientRect();
@@ -109,8 +145,6 @@ export default class AyCarousel {
         this.lastTranslate = this.carousel.getBoundingClientRect().left - edgeToCardDist;
         this.startX = pageX;
         this.startY = pageY;
-        this.callbacks.onmove = e => this.ondragmove(e);
-        this.callbacks.onend = e => this.ondragend(e);
         this.totalMove = {
             x: 0,
             y: 0
@@ -122,11 +156,11 @@ export default class AyCarousel {
         this.velocity = this.amplitude = 0;
         this.frame = this.currentTranslate;
         this.velocityInterval = window.setInterval(this.calcVelocity, 100);
-        this.carousel.addEventListener('mousemove', this.callbacks.onmove);
-        this.carousel.addEventListener('touchmove', this.callbacks.onmove);
-        this.carousel.addEventListener('touchend', this.callbacks.onend);
-        this.carousel.addEventListener('mouseup', this.callbacks.onend);
-        this.carousel.addEventListener('mouseleave', this.callbacks.onend);
+        this.carousel.addEventListener('mousemove', this.callbacks.onDragMove);
+        this.carousel.addEventListener('touchmove', this.callbacks.onDragMove);
+        this.carousel.addEventListener('touchend', this.callbacks.onDragEnd);
+        this.carousel.addEventListener('mouseup', this.callbacks.onDragEnd);
+        this.carousel.addEventListener('mouseleave', this.callbacks.onDragEnd);
     }
     calcVelocity() {
         const now = Date.now();
@@ -138,6 +172,9 @@ export default class AyCarousel {
         return this.velocity = 0.8 * v + 0.2 * this.velocity;
     }
     momentumScroll(stopPoint) {
+        if (this.destroyed) {
+            return;
+        }
         if (this.amplitude) {
             const elapsed = Date.now() - this.timestamp;
             const delta = -this.amplitude * Math.exp(-elapsed / (this.config.decelerationRate));
@@ -155,7 +192,7 @@ export default class AyCarousel {
             }
         }
     }
-    ondragmove(e) {
+    onDragMove(e) {
         const touches = e.touches ? e.touches[0] : e;
         const { pageX, pageY } = touches;
         const move = {
@@ -199,21 +236,24 @@ export default class AyCarousel {
             return this.index;
         }
     }
-    ondotclick(i) {
+    onDotClick(e) {
+        let i = this.dots.indexOf(e.target);
         this.setIndex(i);
         this.snap(this.index);
     }
-    ondotkey(e, i) {
+    onDotKey(e) {
         if (e.keyCode === 32 || e.keyCode === 13) {
+            let i = this.dots.indexOf(e.target);
             e.preventDefault();
             e.stopPropagation();
-            this.ondotclick(i);
+            this.setIndex(i);
+            this.snap(this.index);
         }
     }
     setIndex(index) {
         const oldIndex = this.index;
         this.index = Math.max(Math.min(index, this.cards.length - 1), 0);
-        if (oldIndex !== this.index) {
+        if (oldIndex !== this.index && this.dots && this.dots[oldIndex] && this.dots[this.index]) {
             this.dots[oldIndex].className = '';
             this.dots[this.index].className = 'active';
         }
@@ -236,7 +276,7 @@ export default class AyCarousel {
         this.currentTranslate = nextOffset;
         this.translate(nextOffset, duration, ease);
     }
-    ondragend(e) {
+    onDragEnd(e) {
         this.position = {
             x: e.target.offsetLeft,
             y: e.target.offsetTop
@@ -245,11 +285,11 @@ export default class AyCarousel {
             x: 0,
             y: 0
         };
-        this.carousel.removeEventListener('mousemove', this.callbacks.onmove);
-        this.carousel.removeEventListener('touchmove', this.callbacks.onmove);
-        this.carousel.removeEventListener('touchend', this.callbacks.onend);
-        this.carousel.removeEventListener('mouseup', this.callbacks.onend);
-        this.carousel.removeEventListener('mouseleave', this.callbacks.onend);
+        this.carousel.removeEventListener('mousemove', this.callbacks.onDragMove);
+        this.carousel.removeEventListener('touchmove', this.callbacks.onDragMove);
+        this.carousel.removeEventListener('touchend', this.callbacks.onDragEnd);
+        this.carousel.removeEventListener('mouseup', this.callbacks.onDragEnd);
+        this.carousel.removeEventListener('mouseleave', this.callbacks.onDragEnd);
         window.clearInterval(this.velocityInterval);
         if (this.velocity > 0.5 || this.velocity < -0.5) {
             this.amplitude = (1 - this.config.heaviness) * this.velocity;
@@ -261,14 +301,14 @@ export default class AyCarousel {
             this.snap(this.index);
         }
     }
-    translate(x, length, fn) {
+    translate(x, length, fn, updateIndex = true) {
         this.carousel.style['transition'] = 'transform';
         this.carousel.style['transitionDuration'] = `${length}ms`;
         this.carousel.style['transform'] = `translate3d(${x}px,0px,0px)`;
         if (fn) {
             this.carousel.style['transitionTimingFunction'] = fn;
         }
-        if (length == 0) {
+        if (length === 0 && updateIndex) {
             this.setIndex(this.calculateIndex());
         }
         window.requestAnimationFrame(_ => this.rescale());
@@ -289,6 +329,9 @@ export default class AyCarousel {
         }
     }
     rescale() {
+        if (this.destroyed) {
+            return;
+        }
         const from = Math.max(this.index - 2, 0);
         const to = Math.min(this.index + 2, this.cards.length - 1);
         for (let i = from; i <= to; i++) {
@@ -305,6 +348,29 @@ export default class AyCarousel {
         const edgeToCardDist = (this.carouselParent.width - this.cardWidth) / 2;
         return Math.min((this.cardWidth * i - edgeToCardDist + this.carouselParent.marginLeft) * -1, 0);
     }
+    cleanUp() {
+        this.removeDots(true);
+        this.carousel.removeEventListener('touchstart', this.callbacks.onDragStart);
+        this.carousel.removeEventListener('mousedown', this.callbacks.onDragStart);
+        this.carousel.removeEventListener('transitionend', this.callbacks.onTransitionEnd);
+        window.removeEventListener('resize', this.callbacks.onWindowResize);
+        this.destroyed = true;
+    }
+    removeDots(includingContainer = false) {
+        while (this.dots.length > 0) {
+            let dot = this.dots.pop();
+            if (dot === undefined) {
+                continue;
+            }
+            dot.removeEventListener('touchstart', this.callbacks.onDotClick);
+            dot.removeEventListener('click', this.callbacks.onDotClick);
+            dot.removeEventListener('keydown', this.callbacks.onDotKey);
+            this.dotContainer.removeChild(dot);
+        }
+        if (includingContainer && this.dotContainer && this.dotContainer.parentElement) {
+            this.dotContainer.parentElement.removeChild(this.dotContainer);
+        }
+    }
     setupConfig(config) {
         const defaultConfig = {
             decelerationRate: 900,
@@ -313,9 +379,11 @@ export default class AyCarousel {
             snapSpeedConstant: 300,
             heaviness: 0.95,
             shrinkSpeed: 150,
-            enableDots: true
+            enableDots: true,
+            includeStyle: false
         };
         return assign({}, defaultConfig, config);
     }
 }
+AyCarousel.documentStyleAdded = false;
 //# sourceMappingURL=index.js.map
