@@ -111,7 +111,7 @@ export default class AyCarousel {
   }
 
   updateItems() {
-    if (this.cards.length > 0 && !this.initialIndexSetOnce) {
+    if (this.cards.length > this.initialIndex && !this.initialIndexSetOnce) {
       this.setIndex(this.initialIndex);
       this.initialIndexSetOnce = true;
     }
