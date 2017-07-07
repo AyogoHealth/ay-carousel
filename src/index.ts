@@ -160,7 +160,7 @@ export default class AyCarousel {
       clearTimeout(this.resizeTimeoutId);
     }
     this.followUpResize(snap);
-    this.resizeTimeoutId = setTimeout(this.callbacks.onResizeFollowUp, 200, snap);
+    this.resizeTimeoutId = setTimeout(this.callbacks.onResizeFollowUp, 150, snap);
   }
   
   followUpResize(snap : boolean = true): void {
@@ -183,7 +183,7 @@ export default class AyCarousel {
     this.viewportWidth = window.innerWidth;
     this.cardWidth = this.cards[0].offsetWidth;
     if (snap) {
-      this.snap(this.index);
+      this.snap(this.index, undefined, true);
     }
   }
 
@@ -365,7 +365,7 @@ export default class AyCarousel {
     }
   }
 
-  snap(nextIndex? : number, direction? : string) {
+  snap(nextIndex? : number, direction? : string, instant? : boolean) {
     if(direction) {
       direction == 'right' ? nextIndex = this.index+1 : nextIndex = this.index-1;
     } else if(nextIndex !== undefined) {
@@ -380,7 +380,7 @@ export default class AyCarousel {
     const ease = 'ease';
     const distance = Math.abs(this.currentTranslate - nextOffset);
 
-    const duration = Math.floor(distance*1.25) + this.config.snapSpeedConstant;
+    const duration = instant ? 200 : Math.floor(distance*1.25) + this.config.snapSpeedConstant;
 
     this.currentTranslate = nextOffset;
 
