@@ -17,12 +17,13 @@
 }
 
 .carousel-item {
-    width: 75vw;
+    width: 90%;
+    flex: 0 0 auto;
 }
 
 .carousel,carousel {
     position: relative;
     display: flex;
     align-items: stretch;
-    width: 30000px;
+    width: 100%;
 }
