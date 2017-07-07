@@ -45,6 +45,7 @@ export default class AyCarousel {
   dots : HTMLLIElement[] = [];
   totalMove;
   lastPos;
+  moveThreshold = 10;
   amplitude;
   velocity;
   frame;
@@ -56,6 +57,7 @@ export default class AyCarousel {
   config;
   viewportWidth;
   carouselParent;
+  resizeTimeoutId : number;
   destroyed : boolean = false;
 
   constructor(carousel : HTMLElement, config?, initialIndex=0) {
@@ -96,15 +98,23 @@ export default class AyCarousel {
     this.callbacks.onDotClick = this.onDotClick.bind(this);
     this.callbacks.onDotKey = this.onDotKey.bind(this);
     this.callbacks.onWindowResize = this.handleResize.bind(this);
+    this.callbacks.onResizeFollowUp = this.followUpResize.bind(this);
     this.callbacks.onTransitionEnd = (evt : TransitionEvent) => {
       if (evt.target === this.carousel) {
         this.rescale();
       }
     };
+    this.callbacks.onClick = (evt : MouseEvent) => {
+      if (this.totalMove.x > this.moveThreshold || this.totalMove.y > this.moveThreshold) {
+        evt.preventDefault();
+        evt.stopPropagation();
+      }
+    }
 
     this.carousel.addEventListener('touchstart', this.callbacks.onDragStart);
     this.carousel.addEventListener('mousedown', this.callbacks.onDragStart);
     this.carousel.addEventListener('transitionend', this.callbacks.onTransitionEnd);
+    this.carousel.addEventListener('click', this.callbacks.onClick, true);
     window.addEventListener('resize', this.callbacks.onWindowResize);
     
     this.updateItems();
@@ -147,6 +157,16 @@ export default class AyCarousel {
   }
 
   handleResize(snap : boolean = true) {
+    if (this.resizeTimeoutId) {
+      clearTimeout(this.resizeTimeoutId);
+    }
+    this.followUpResize(snap);
+    this.resizeTimeoutId = setTimeout(this.callbacks.onResizeFollowUp, 200, snap);
+  }
+  
+  followUpResize(snap : boolean = true): void {
+    this.resizeTimeoutId = 0;
+    
     let carouselParent = this.carousel.parentElement;
 
     if(carouselParent) {
@@ -277,7 +297,7 @@ export default class AyCarousel {
     };
 
     // Don't do anything if the move doesn't exceed our threshold
-    if(this.totalMove.x < 10 && this.totalMove.y < 10) {
+    if (this.totalMove.x < this.moveThreshold && this.totalMove.y < this.moveThreshold) {
       return;
     }
 
@@ -374,10 +394,6 @@ export default class AyCarousel {
       y: e.target.offsetTop
     };
 
-    this.totalMove = {
-      x: 0,
-      y: 0
-    };
     this.carousel.removeEventListener('mousemove', this.callbacks.onDragMove);
     this.carousel.removeEventListener('touchmove', this.callbacks.onDragMove);
     
@@ -464,6 +480,7 @@ export default class AyCarousel {
     this.carousel.removeEventListener('touchstart', this.callbacks.onDragStart);
     this.carousel.removeEventListener('mousedown', this.callbacks.onDragStart);
     this.carousel.removeEventListener('transitionend', this.callbacks.onTransitionEnd);
+    this.carousel.removeEventListener('click', this.callbacks.onClick);
     window.removeEventListener('resize', this.callbacks.onWindowResize);
     this.destroyed = true;
   }
