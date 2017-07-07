@@ -19,7 +19,8 @@ const CAROUSEL_STYLES = `
   }
 
   .carousel-item {
-    width: 75vw;
+    width: 90%;
+    flex: 0 0 auto;
   }
 `;
 
@@ -86,7 +87,7 @@ export default class AyCarousel {
         AyCarousel.documentStyleAdded = true;
       }
       
-      this.carousel.setAttribute('style',  `position: relative; width: 30000px; display: flex; align-items: stretch;`);
+      this.carousel.setAttribute('style',  `position: relative; width: 100%; display: flex; align-items: stretch;`);
     }
 
     this.cards = <any>this.carousel.children;
