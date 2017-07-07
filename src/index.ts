@@ -45,7 +45,6 @@ export default class AyCarousel {
   dots : HTMLLIElement[] = [];
   totalMove;
   lastPos;
-  moveThreshold = 10;
   amplitude;
   velocity;
   frame;
@@ -105,11 +104,11 @@ export default class AyCarousel {
       }
     };
     this.callbacks.onClick = (evt : MouseEvent) => {
-      if (this.totalMove.x > this.moveThreshold || this.totalMove.y > this.moveThreshold) {
+      if (this.totalMove && (this.totalMove.x > this.config.moveThreshold || this.totalMove.y > this.config.moveThreshold)) {
         evt.preventDefault();
         evt.stopPropagation();
       }
-    }
+    };
 
     this.carousel.addEventListener('touchstart', this.callbacks.onDragStart);
     this.carousel.addEventListener('mousedown', this.callbacks.onDragStart);
@@ -297,7 +296,7 @@ export default class AyCarousel {
     };
 
     // Don't do anything if the move doesn't exceed our threshold
-    if (this.totalMove.x < this.moveThreshold && this.totalMove.y < this.moveThreshold) {
+    if (this.totalMove.x < this.config.moveThreshold && this.totalMove.y < this.config.moveThreshold) {
       return;
     }
 
@@ -472,7 +471,17 @@ export default class AyCarousel {
 
     // Translating to the left of the desired card, minus our desired edge dist
     // Multiplied by -1 because we are translating to the right
-    return Math.min((this.cardWidth*i - edgeToCardDist + this.carouselParent.marginLeft) * -1, 0);
+    let centeredPosition = (this.cardWidth*i - edgeToCardDist + this.carouselParent.marginLeft) * -1;
+
+    if (this.cards.length <= 1) {             //If there's only one item, center it
+      return centeredPosition;
+    } else if (i === 0) {                     //If it's the first of multiple, align left
+      return 0;
+    } else if (i === this.cards.length - 1) { //If it's the last of multiple, align right
+      return (this.carouselParent.width - this.cardWidth) - (this.cardWidth * (this.cards.length - 1));
+    } else {                                  //Otherwise it's in the middle of multiple, so center it
+      return centeredPosition;
+    }
   }
 
   cleanUp() {
@@ -482,6 +491,9 @@ export default class AyCarousel {
     this.carousel.removeEventListener('transitionend', this.callbacks.onTransitionEnd);
     this.carousel.removeEventListener('click', this.callbacks.onClick);
     window.removeEventListener('resize', this.callbacks.onWindowResize);
+    if (this.resizeTimeoutId) {
+      clearTimeout(this.resizeTimeoutId);
+    }
     this.destroyed = true;
   }
 
@@ -508,7 +520,8 @@ export default class AyCarousel {
       minCardScale: 0.9, // Smallest that partially-viewable cards can scale to
       snapSpeedConstant: 300, // Constant ms to be added to snapping duration
       heaviness: 0.95, // Scale of 0 to 1, higher = less momentum after release
-      shrinkSpeed: 150, // Speed of card scaling transition, in ms 
+      shrinkSpeed: 150, // Speed of card scaling transition, in ms
+      moveThreshold: 10, // Min accumulative x + y distance travelled by pointer before carousel will move and click events are cancelled
       enableDots: true,
       includeStyle: false
     };
