@@ -169,12 +169,15 @@ export default class AyCarousel {
     
     let carouselParent = this.carousel.parentElement;
 
-    if(carouselParent) {
+    if (carouselParent) {
+      let parentRect = carouselParent.getBoundingClientRect();
+
       this.carouselParent = {
         element: carouselParent,
-        width: carouselParent.offsetWidth,
-        marginLeft: parseInt(<string>window.getComputedStyle(carouselParent).marginLeft, 0)
-      }
+        width: parentRect.width,
+        left: parentRect.left,
+        right: parentRect.right
+      };
     }
 
     if (this.cards.length === 0) {
@@ -429,15 +432,15 @@ export default class AyCarousel {
     window.requestAnimationFrame(_ => this.rescale());
   }
 
-  percentVisible(card : HTMLElement) {
+  proportionVisible(card : HTMLElement) {
     const cardRect = card.getBoundingClientRect();
 
-    if((cardRect.left < 0 && cardRect.right < 0) || cardRect.left > this.viewportWidth) {
+    if (cardRect.right < this.carouselParent.left || cardRect.left > this.carouselParent.right) {
       return 0;
-    } else if(cardRect.left < 0) {
-      return cardRect.right/this.cardWidth;
-    } else if(cardRect.right > this.viewportWidth) {
-      return (this.viewportWidth - cardRect.left)/this.cardWidth;
+    } else if (cardRect.left < this.carouselParent.left) {
+      return (cardRect.right - this.carouselParent.left) / this.cardWidth;
+    } else if (cardRect.right > this.carouselParent.right) {
+      return (this.carouselParent.right - cardRect.left) / this.cardWidth;
     } else {
       return 1;
     }
@@ -453,7 +456,7 @@ export default class AyCarousel {
     const to = Math.min(this.index+2, this.cards.length-1);
  
     for(let i = from; i<=to; i++) {
-      const scaler = Math.min(Math.max(this.percentVisible(this.cards[i])+0.25, this.config.minCardScale), 1);
+      const scaler = Math.min(Math.max(this.proportionVisible(this.cards[i])+0.25, this.config.minCardScale), 1);
 
       this.cards[i].style['transform'] = `scale(${scaler})`;
       this.cards[i].style['transitionTimingFunction'] = 'ease';
@@ -472,7 +475,8 @@ export default class AyCarousel {
 
     // Translating to the left of the desired card, minus our desired edge dist
     // Multiplied by -1 because we are translating to the right
-    let centeredPosition = (this.cardWidth*i - edgeToCardDist + this.carouselParent.marginLeft) * -1;
+    //let centeredPosition = (this.cardWidth*i - edgeToCardDist + this.carouselParent.left) * -1;
+    let centeredPosition = (this.cardWidth*i - edgeToCardDist) * -1;
 
     if (this.cards.length <= 1) {             //If there's only one item, center it
       return centeredPosition;

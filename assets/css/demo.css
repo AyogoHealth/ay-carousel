@@ -1,9 +1,9 @@
 body {
-    background: -webkit-linear-gradient(#E3F0C0, #D1E39F);
+  background: -webkit-linear-gradient(#E3F0C0, #D1E39F);
 }
 
 html {
-	height: auto;
+  height: auto;
 }
 
 .page-wrapper {
@@ -12,8 +12,7 @@ html {
 }
 
 main {
-  padding: 10px;
-  margin: 10px;
+  margin: 20px;
 }
 
 nav {
@@ -30,13 +29,10 @@ nav {
 }
 
 .carousel {
-  margin-top: 20px;
-  float: left;
+  margin-top: 40px;
 }
 
 .carousel-item {
-  float: left;
-
   /*http://www.patternify.com/*/
   background:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAYAAACNbyblAAAALElEQVQYV2NcuHzSf30jdQZkwHjh5s7/F8/dZECWAAuCVCFLwAWRJVAEYRIA2t0cY/pcFWQAAAAASUVORK5CYII=
     ) repeat;
@@ -45,16 +41,15 @@ nav {
   color: #353d39;
   border-radius: 5px;
   box-shadow: inset 1px 1px 1px grey;
-  margin: 10px 0px 30px 0px;
   padding: 10px;
 }
 
 .carousel-item > * {
-    font-weight: 400;
-    line-height: 15px;
-    font-size: 14px;
-    user-select: none;
-    -webkit-user-drag: none;
+  font-weight: 400;
+  line-height: 15px;
+  font-size: 14px;
+  user-select: none;
+  -webkit-user-drag: none;
 }
 
 .carousel-item > h2 {
@@ -98,8 +93,6 @@ img {
 }
 
 .card {
-  height: auto;
-  width: 75vw;
   background: white;
   display: block;
   font-family: system-ui, -apple-system, -apple-system-font, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', sans-serif;
@@ -108,7 +101,6 @@ img {
   box-shadow: 1px 1px 1px grey;
   margin: 10px 0px;
   padding: 10px;
-  display: inline-block;
 }
 
 .card > h2 {
@@ -120,9 +112,14 @@ img {
 
 .card > * {
   font-weight: 400;
-    line-height: 15px;
-    font-size: 16px;
-
+  line-height: 15px;
+  font-size: 16px;
+}
+.card:after {
+  content: " ";
+  display: block;
+  height: 0;
+  clear: both;
 }
 p.details {
   padding: 0px 10px 10px 20px;
@@ -131,8 +128,8 @@ p.details {
 }
 
 p.rating {
-    padding: 10px 10px 0px 20px;
-    font-size: 14px;
+  padding: 10px 10px 0px 20px;
+  font-size: 14px;
 }
 
 .score {
@@ -142,7 +139,6 @@ p.rating {
 .donut {
   height: 60px;
   width: 60px;
-  margin: 10px;
   float: left;
   margin: 0 0 0 10px;
 }
