@@ -46,8 +46,8 @@ export default class AyCarousel {
   dots : HTMLLIElement[] = [];
   totalMove;
   lastPos;
-  amplitude;
-  velocity;
+  amplitude = 0;
+  velocity = 0;
   frame;
   timestamp = 0;
   previousTranslate = 0;
@@ -231,8 +231,9 @@ export default class AyCarousel {
     // Velocity Stuff
     this.velocity = this.amplitude = 0;
     this.frame = this.currentTranslate;
+    this.timestamp = Date.now();
 
-    this.velocityInterval = window.setInterval(this.calcVelocity, 100);
+    this.velocityInterval = window.setInterval(this.calcVelocity.bind(this), 100);
 
     this.carousel.addEventListener('mousemove', this.callbacks.onDragMove);
     this.carousel.addEventListener('touchmove', this.callbacks.onDragMove);
@@ -462,10 +463,6 @@ export default class AyCarousel {
       this.cards[i].style['transitionTimingFunction'] = 'ease';
       this.cards[i].style['transitionDuration'] = `${this.config.shrinkSpeed}ms`;
     }
-
-    if (this.velocity != 0) {
-      window.requestAnimationFrame(_ => this.rescale());
-    }
   }
 
   calcOS(i) {
@@ -520,11 +517,11 @@ export default class AyCarousel {
 
   setupConfig(config?) {
     const defaultConfig = {
-      decelerationRate: 900, // How fast we decelerate
-      momentumSnapVelocityThreshold: 150, // Velocity at which cards snap
+      decelerationRate: 700, // How fast we decelerate
+      momentumSnapVelocityThreshold: 105, // Velocity at which cards snap
       minCardScale: 0.9, // Smallest that partially-viewable cards can scale to
       snapSpeedConstant: 300, // Constant ms to be added to snapping duration
-      heaviness: 0.95, // Scale of 0 to 1, higher = less momentum after release
+      heaviness: 0.675, // Scale of 0 to 1, higher = less momentum after release
       shrinkSpeed: 150, // Speed of card scaling transition, in ms
       moveThreshold: 10, // Min accumulative x + y distance travelled by pointer before carousel will move and click events are cancelled
       enableDots: true,
