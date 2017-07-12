@@ -41,7 +41,7 @@
             <div class="pill-button">+ Add Readiness</div>
           </div>
         </section>
-        <section class="carousel">
+        <section class="carousel" initial-index="1">
           <div class="carousel-item">
             <h2>Upcoming Milestones</h2>
             <p>What are some milestones you will complete with this goal?</p>
@@ -74,7 +74,7 @@
     </div>
     <script>
       var carousels = document.querySelectorAll('.carousel');
-      carousels.forEach(function(carousel) { new Carousel(carousel); });
+      carousels.forEach(function(carousel) { new Carousel(carousel, undefined, carousel.attributes['initial-index'] ? parseInt(carousel.attributes['initial-index'].value) : 0); });
     </script>
   </body>
 </html>

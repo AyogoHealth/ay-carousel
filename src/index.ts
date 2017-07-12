@@ -34,6 +34,7 @@ export default class AyCarousel {
   initialIndexSetOnce : boolean = false;
   currentTranslate : number = 0;
   lastTranslate : number = 0;
+  currentlyDragging : boolean = false;
   callbacks : any = {};
   cards : HTMLElement[];
   cardWidth : number;
@@ -124,8 +125,6 @@ export default class AyCarousel {
     this.rescale();
     this.translate(this.calcOS(this.index), 0, undefined, false);
 
-    this.currentTranslate = 0;
-
     window.requestAnimationFrame(_ => this.rescale());
 
     if (this.dotContainer) {
@@ -185,9 +184,14 @@ export default class AyCarousel {
   }
 
   onDragStart(e) {
-    if(this.cards.length < 2) {
+    if (this.cards.length < 2) {
+      return;
+    } else if (this.currentlyDragging) {
+      e.preventDefault();
+      e.stopPropagation();
       return;
     }
+    this.currentlyDragging = true;
 
     const touches =  e.touches ? e.touches[0] : e;
     const {pageX, pageY} = touches;
@@ -349,6 +353,8 @@ export default class AyCarousel {
   }
 
   onDragEnd() {
+    this.currentlyDragging = false;
+
     this.carousel.removeEventListener('mousemove', this.callbacks.onDragMove);
     this.carousel.removeEventListener('touchmove', this.callbacks.onDragMove);
     
