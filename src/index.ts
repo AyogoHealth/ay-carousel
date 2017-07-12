@@ -34,6 +34,7 @@ export default class AyCarousel {
   initialIndexSetOnce : boolean = false;
   currentTranslate : number = 0;
   lastTranslate : number = 0;
+  currentlyDragging : boolean = false;
   callbacks : any = {};
   cards : HTMLElement[];
   cardWidth : number;
@@ -124,8 +125,6 @@ export default class AyCarousel {
     this.rescale();
     this.translate(this.calcOS(this.index), 0, undefined, false);
 
-    this.currentTranslate = 0;
-
     window.requestAnimationFrame(_ => this.rescale());
 
     if (this.dotContainer) {
@@ -185,9 +184,14 @@ export default class AyCarousel {
   }
 
   onDragStart(e) {
-    if(this.cards.length < 2) {
+    if (this.cards.length < 2) {
+      return;
+    } else if (this.currentlyDragging) {
+      e.preventDefault();
+      e.stopPropagation();
       return;
     }
+    this.currentlyDragging = true;
 
     const touches =  e.touches ? e.touches[0] : e;
     const {pageX, pageY} = touches;
@@ -250,8 +254,8 @@ export default class AyCarousel {
       const delta = -this.amplitude * Math.exp(-elapsed / (this.config.decelerationRate));
 
       if(delta > stopPoint || delta < -stopPoint) {
-        const outOfBoundsLeft = this.target+delta > 0;
-        const outOfBoundsRight = this.target+delta < -this.cardWidth * this.cards.length + (this.cardWidth);
+        const outOfBoundsLeft = this.target+delta > (this.config.edgeBounceProportion * this.cardWidth);
+        const outOfBoundsRight = this.target+delta < (this.calcOS(this.cards.length-1) - (this.config.edgeBounceProportion * this.cardWidth));
         if(outOfBoundsLeft || outOfBoundsRight) {
           return this.snap(this.index);
         }
@@ -349,6 +353,8 @@ export default class AyCarousel {
   }
 
   onDragEnd() {
+    this.currentlyDragging = false;
+
     this.carousel.removeEventListener('mousemove', this.callbacks.onDragMove);
     this.carousel.removeEventListener('touchmove', this.callbacks.onDragMove);
     
@@ -383,21 +389,9 @@ export default class AyCarousel {
     window.requestAnimationFrame(_ => this.rescale());
   }
 
-  proportionVisible(index : number) {
-    const cardRect = {
-      left: this.currentTranslate + (this.cardWidth * index),
-      right: this.currentTranslate + (this.cardWidth * (index + 1))
-    };
-
-    if (cardRect.right < this.carouselParent.left || cardRect.left > this.carouselParent.right) {
-      return 0;
-    } else if (cardRect.left < this.carouselParent.left) {
-      return (cardRect.right - this.carouselParent.left) / this.cardWidth;
-    } else if (cardRect.right > this.carouselParent.right) {
-      return (this.carouselParent.right - cardRect.left) / this.cardWidth;
-    } else {
-      return 1;
-    }
+  proportionVisible(index : number) : number {
+    let prop = 1 - Math.abs((this.calcOS(index) - this.currentTranslate) / this.cardWidth);
+    return Math.max(0, prop);
   }
 
   rescale() {
@@ -477,6 +471,7 @@ export default class AyCarousel {
       heaviness: 0.675, // Scale of 0 to 1, higher = less momentum after release
       shrinkSpeed: 150, // Speed of card scaling transition, in ms
       moveThreshold: 10, // Min accumulative x + y distance travelled by pointer before carousel will move and click events are cancelled
+      edgeBounceProportion: 0.25, // How far beyond the scroll limits the carousel can travel with momentum before snapping (proportion of card width)
       enableDots: true,
       includeStyle: false
     };

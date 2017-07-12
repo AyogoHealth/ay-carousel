@@ -14,6 +14,13 @@ html {
 main {
   margin: 20px;
 }
+@media (min-width: 800px) {
+  main {
+    width: 760px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+}
 
 nav {
   width: 100%;
