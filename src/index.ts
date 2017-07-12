@@ -254,8 +254,8 @@ export default class AyCarousel {
       const delta = -this.amplitude * Math.exp(-elapsed / (this.config.decelerationRate));
 
       if(delta > stopPoint || delta < -stopPoint) {
-        const outOfBoundsLeft = this.target+delta > 0;
-        const outOfBoundsRight = this.target+delta < -this.cardWidth * this.cards.length + (this.cardWidth);
+        const outOfBoundsLeft = this.target+delta > (this.config.edgeBounceProportion * this.cardWidth);
+        const outOfBoundsRight = this.target+delta < (this.calcOS(this.cards.length-1) - (this.config.edgeBounceProportion * this.cardWidth));
         if(outOfBoundsLeft || outOfBoundsRight) {
           return this.snap(this.index);
         }
@@ -471,6 +471,7 @@ export default class AyCarousel {
       heaviness: 0.675, // Scale of 0 to 1, higher = less momentum after release
       shrinkSpeed: 150, // Speed of card scaling transition, in ms
       moveThreshold: 10, // Min accumulative x + y distance travelled by pointer before carousel will move and click events are cancelled
+      edgeBounceProportion: 0.25, // How far beyond the scroll limits the carousel can travel with momentum before snapping (proportion of card width)
       enableDots: true,
       includeStyle: false
     };
