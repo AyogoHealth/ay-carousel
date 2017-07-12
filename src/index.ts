@@ -389,21 +389,9 @@ export default class AyCarousel {
     window.requestAnimationFrame(_ => this.rescale());
   }
 
-  proportionVisible(index : number) {
-    const cardRect = {
-      left: this.currentTranslate + (this.cardWidth * index),
-      right: this.currentTranslate + (this.cardWidth * (index + 1))
-    };
-
-    if (cardRect.right < this.carouselParent.left || cardRect.left > this.carouselParent.right) {
-      return 0;
-    } else if (cardRect.left < this.carouselParent.left) {
-      return (cardRect.right - this.carouselParent.left) / this.cardWidth;
-    } else if (cardRect.right > this.carouselParent.right) {
-      return (this.carouselParent.right - cardRect.left) / this.cardWidth;
-    } else {
-      return 1;
-    }
+  proportionVisible(index : number) : number {
+    let prop = 1 - Math.abs((this.calcOS(index) - this.currentTranslate) / this.cardWidth);
+    return Math.max(0, prop);
   }
 
   rescale() {
