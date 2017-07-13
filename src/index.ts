@@ -401,7 +401,7 @@ export default class AyCarousel {
   }
 
   rescale() {
-    if (this.destroyed) {
+    if (this.destroyed || this.config.minCardScale >= 1) {
       return;
     }
 
