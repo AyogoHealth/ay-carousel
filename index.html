@@ -41,7 +41,7 @@
             <div class="pill-button">+ Add Readiness</div>
           </div>
         </section>
-        <section class="carousel" initial-index="1">
+        <section class="carousel" initial-index="1" config='{"cardFilterClass": "carousel-item"}'>
           <div class="carousel-item">
             <h2>Upcoming Milestones</h2>
             <p>What are some milestones you will complete with this goal?</p>
@@ -49,11 +49,13 @@
             <a href="#">Learn more about milestones ></a>
             <div class="pill-button">+ Add Milestones</div>
           </div>
+          <div class="spacer"></div>
           <div class="carousel-item">
             <h2>Completed Milestones</h2>
             <p>Once you have completed a milestone, it will be saved here.</p>
             <a href="#">Learn more about milestones ></a>
           </div>
+          <div class="spacer"></div>
           <div class="carousel-item">
             <h2>THIS CARD LEFT INTENTIONALLY BLANK</h2>
             <a href="#">Learn more about blanks ></a>
@@ -74,7 +76,11 @@
     </div>
     <script>
       var carousels = document.querySelectorAll('.carousel');
-      carousels.forEach(function(carousel) { new Carousel(carousel, undefined, carousel.attributes['initial-index'] ? parseInt(carousel.attributes['initial-index'].value) : 0); });
+      carousels.forEach(function(carousel) {
+        var config = carousel.attributes.config ? JSON.parse(carousel.attributes.config.value) : undefined;
+        var initialIndex = carousel.attributes['initial-index'] ? parseInt(carousel.attributes['initial-index'].value) : undefined;
+        new Carousel(carousel, config, initialIndex);
+      });
     </script>
   </body>
 </html>
