@@ -29,6 +29,7 @@ export default class AyCarousel {
         this.initialIndexSetOnce = false;
         this.currentTranslate = 0;
         this.lastTranslate = 0;
+        this.currentlyDragging = false;
         this.callbacks = {};
         this.index = 0;
         this.dots = [];
@@ -63,7 +64,6 @@ export default class AyCarousel {
             }
             this.carousel.setAttribute('style', `position: relative; width: 100%; display: flex; align-items: stretch;`);
         }
-        this.cards = this.carousel.children;
         this.callbacks.onDragStart = this.onDragStart.bind(this);
         this.callbacks.onDragMove = this.onDragMove.bind(this);
         this.callbacks.onDragEnd = this.onDragEnd.bind(this);
@@ -90,6 +90,13 @@ export default class AyCarousel {
         this.updateItems();
     }
     updateItems() {
+        this.cards = [];
+        for (let i = 0, l = this.carousel.children.length; i < l; i++) {
+            let child = this.carousel.children[i];
+            if ((!this.config.cardFilterClass) || child.classList.contains(this.config.cardFilterClass)) {
+                this.cards.push(child);
+            }
+        }
         if (this.cards.length > this.initialIndex && !this.initialIndexSetOnce) {
             this.setIndex(this.initialIndex);
             this.initialIndexSetOnce = true;
@@ -97,7 +104,6 @@ export default class AyCarousel {
         this.handleResize(false);
         this.rescale();
         this.translate(this.calcOS(this.index), 0, undefined, false);
-        this.currentTranslate = 0;
         window.requestAnimationFrame(_ => this.rescale());
         if (this.dotContainer) {
             this.removeDots(false);
@@ -150,6 +156,12 @@ export default class AyCarousel {
         if (this.cards.length < 2) {
             return;
         }
+        else if (this.currentlyDragging) {
+            e.preventDefault();
+            e.stopPropagation();
+            return;
+        }
+        this.currentlyDragging = true;
         const touches = e.touches ? e.touches[0] : e;
         const { pageX, pageY } = touches;
         this.lastTranslate = this.currentTranslate;
@@ -190,8 +202,8 @@ export default class AyCarousel {
             const elapsed = Date.now() - this.timestamp;
             const delta = -this.amplitude * Math.exp(-elapsed / (this.config.decelerationRate));
             if (delta > stopPoint || delta < -stopPoint) {
-                const outOfBoundsLeft = this.target + delta > 0;
-                const outOfBoundsRight = this.target + delta < -this.cardWidth * this.cards.length + (this.cardWidth);
+                const outOfBoundsLeft = this.target + delta > (this.config.edgeBounceProportion * this.cardWidth);
+                const outOfBoundsRight = this.target + delta < (this.calcOS(this.cards.length - 1) - (this.config.edgeBounceProportion * this.cardWidth));
                 if (outOfBoundsLeft || outOfBoundsRight) {
                     return this.snap(this.index);
                 }
@@ -269,6 +281,7 @@ export default class AyCarousel {
         this.translate(nextOffset, duration, ease);
     }
     onDragEnd() {
+        this.currentlyDragging = false;
         this.carousel.removeEventListener('mousemove', this.callbacks.onDragMove);
         this.carousel.removeEventListener('touchmove', this.callbacks.onDragMove);
         this.carousel.removeEventListener('touchend', this.callbacks.onDragEnd);
@@ -298,25 +311,11 @@ export default class AyCarousel {
         window.requestAnimationFrame(_ => this.rescale());
     }
     proportionVisible(index) {
-        const cardRect = {
-            left: this.currentTranslate + (this.cardWidth * index),
-            right: this.currentTranslate + (this.cardWidth * (index + 1))
-        };
-        if (cardRect.right < this.carouselParent.left || cardRect.left > this.carouselParent.right) {
-            return 0;
-        }
-        else if (cardRect.left < this.carouselParent.left) {
-            return (cardRect.right - this.carouselParent.left) / this.cardWidth;
-        }
-        else if (cardRect.right > this.carouselParent.right) {
-            return (this.carouselParent.right - cardRect.left) / this.cardWidth;
-        }
-        else {
-            return 1;
-        }
+        let prop = 1 - Math.abs((this.calcOS(index) - this.currentTranslate) / this.cardWidth);
+        return Math.max(0, prop);
     }
     rescale() {
-        if (this.destroyed) {
+        if (this.destroyed || this.config.minCardScale >= 1) {
             return;
         }
         const from = Math.max(this.index - 2, 0);
@@ -380,6 +379,8 @@ export default class AyCarousel {
             heaviness: 0.675,
             shrinkSpeed: 150,
             moveThreshold: 10,
+            edgeBounceProportion: 0.25,
+            cardFilterClass: '',
             enableDots: true,
             includeStyle: false
         };

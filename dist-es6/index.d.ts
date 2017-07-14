@@ -6,6 +6,7 @@ export default class AyCarousel {
     initialIndexSetOnce: boolean;
     currentTranslate: number;
     lastTranslate: number;
+    currentlyDragging: boolean;
     callbacks: any;
     cards: HTMLElement[];
     cardWidth: number;

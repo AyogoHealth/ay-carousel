@@ -10,9 +10,9 @@ angular.module(modName, [])
             config: '=',
             initialIndex: '@'
         },
-        link: function ($scope, $element, attrs) {
+        link: function ($scope, $element) {
             let el = $element[0];
-            let carousel = new AyCarousel(el, attrs.config, attrs.initialIndex);
+            let carousel = new AyCarousel(el, $scope.config, $scope.initialIndex);
             let mutationObserver = new MutationObserver(() => {
                 carousel.updateItems();
             });
