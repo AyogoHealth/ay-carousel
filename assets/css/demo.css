@@ -67,6 +67,13 @@ nav {
   padding: 10px;
 }
 
+.spacer {
+  width: 1px;
+  margin: 0 1px;
+  background-color: black;
+  flex: 0 0 auto;
+}
+
 p {
   padding: 10px 10px 10px 20px;
 }

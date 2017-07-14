@@ -15,7 +15,7 @@ angular.module(modName, [])
     },
     link: function($scope, $element, attrs) {
       let el = $element[0] as HTMLElement;
-      let carousel = new AyCarousel(el, attrs.config, attrs.initialIndex);
+      let carousel = new AyCarousel(el, $scope.config, $scope.initialIndex);
 
       let mutationObserver = new MutationObserver(() => {
         carousel.updateItems();

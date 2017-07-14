@@ -85,8 +85,6 @@ export default class AyCarousel {
       this.carousel.setAttribute('style',  `position: relative; width: 100%; display: flex; align-items: stretch;`);
     }
 
-    this.cards = <any>this.carousel.children;
-
     this.callbacks.onDragStart = this.onDragStart.bind(this);
     this.callbacks.onDragMove = this.onDragMove.bind(this);
     this.callbacks.onDragEnd = this.onDragEnd.bind(this);
@@ -116,6 +114,14 @@ export default class AyCarousel {
   }
 
   updateItems() {
+    this.cards = [];
+    for (let i=0, l=this.carousel.children.length; i<l; i++) {
+      let child = <HTMLElement>this.carousel.children[i];
+      if ((! this.config.cardFilterClass) || child.classList.contains(this.config.cardFilterClass)) {
+        this.cards.push(child);
+      }
+    }
+
     if (this.cards.length > this.initialIndex && !this.initialIndexSetOnce) {
       this.setIndex(this.initialIndex);
       this.initialIndexSetOnce = true;
@@ -395,7 +401,7 @@ export default class AyCarousel {
   }
 
   rescale() {
-    if (this.destroyed) {
+    if (this.destroyed || this.config.minCardScale >= 1) {
       return;
     }
 
@@ -472,6 +478,7 @@ export default class AyCarousel {
       shrinkSpeed: 150, // Speed of card scaling transition, in ms
       moveThreshold: 10, // Min accumulative x + y distance travelled by pointer before carousel will move and click events are cancelled
       edgeBounceProportion: 0.25, // How far beyond the scroll limits the carousel can travel with momentum before snapping (proportion of card width)
+      cardFilterClass: '', // If non-falsey, only carousel children with a class matching the supplied value will be itemised as cards
       enableDots: true,
       includeStyle: false
     };
