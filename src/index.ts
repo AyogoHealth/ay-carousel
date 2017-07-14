@@ -35,6 +35,7 @@ export default class AyCarousel {
   currentTranslate : number = 0;
   lastTranslate : number = 0;
   currentlyDragging : boolean = false;
+  passedMoveThreshold : boolean = false;
   callbacks : any = {};
   cards : HTMLElement[];
   cardWidth : number;
@@ -54,14 +55,22 @@ export default class AyCarousel {
   carouselParent;
   resizeTimeoutId : number;
   destroyed : boolean = false;
+  onIndexChange : Function;
+  onMove : Function;
 
-  constructor(carousel : HTMLElement, config?, initialIndex=0) {
+  constructor(carousel : HTMLElement, config?, initialIndex=0, onIndexChange? : Function, onMove? : Function) {
     if (! carousel) {
       return;
     }
 
     this.config = this.setupConfig(config);
     this.initialIndex = initialIndex;
+    if (onIndexChange) {
+      this.onIndexChange = onIndexChange;
+    }
+    if (onMove) {
+      this.onMove = onMove;
+    }
     this.carousel = carousel;
 
     if (this.config.includeStyle) {
@@ -198,6 +207,7 @@ export default class AyCarousel {
       return;
     }
     this.currentlyDragging = true;
+    this.passedMoveThreshold = false;
 
     const touches =  e.touches ? e.touches[0] : e;
     const {pageX, pageY} = touches;
@@ -293,6 +303,12 @@ export default class AyCarousel {
     if (this.totalMove.x < this.config.moveThreshold && this.totalMove.y < this.config.moveThreshold) {
       return;
     }
+    if (! this.passedMoveThreshold) {
+      this.passedMoveThreshold = true;
+      this.startX = pageX;
+      this.startY = pageY;
+      return;
+    }
 
     // If the swipe is vertical, allow page to scroll instead of moving carousel
     if(this.totalMove.x > this.totalMove.y) {
@@ -335,6 +351,10 @@ export default class AyCarousel {
     if (oldIndex !== this.index && this.dots && this.dots[oldIndex] && this.dots[this.index]) {
       this.dots[oldIndex].className = '';
       this.dots[this.index].className = 'active';
+    }
+
+    if (oldIndex !== this.index) {
+      this.onIndexChange && this.onIndexChange({ index: this.index });
     }
   }
 
@@ -380,6 +400,7 @@ export default class AyCarousel {
   }
 
   translate(x : number, length : number, fn? : string, updateIndex : boolean = true) {
+    let oldTranslate = this.currentTranslate;
     this.currentTranslate = x;
     this.carousel.style['transition'] = 'transform';
     this.carousel.style['transitionDuration'] = `${length}ms`;
@@ -393,6 +414,9 @@ export default class AyCarousel {
       this.setIndex(this.calculateIndex());
     }
     window.requestAnimationFrame(_ => this.rescale());
+    if (oldTranslate !== this.currentTranslate) {
+      this.onMove && this.onMove({ proportion: -this.currentTranslate / ((this.cards.length-1)*this.cardWidth), duration: length });
+    }
   }
 
   proportionVisible(index : number) : number {
