@@ -1,4 +1,4 @@
-import {assign} from './utilities';
+import { assign, VelocityTweener } from './utilities';
 
 const CAROUSEL_STYLES = `
   .progress-dots  {
@@ -32,7 +32,8 @@ export default class AyCarousel {
   startY : number = 0;
   initialIndex : number;
   initialIndexSetOnce : boolean = false;
-  currentTranslate : number = 0;
+  private _currentTranslate : number = 0;
+  targetTranslate : number = 0;
   lastTranslate : number = 0;
   currentlyDragging : boolean = false;
   callbacks : any = {};
@@ -42,6 +43,7 @@ export default class AyCarousel {
   carousel : HTMLElement;
   dotContainer : HTMLUListElement;
   dots : HTMLLIElement[] = [];
+  tweener : VelocityTweener;
   totalMove;
   lastPos;
   amplitude = 0;
@@ -62,6 +64,7 @@ export default class AyCarousel {
 
     this.config = this.setupConfig(config);
     this.initialIndex = initialIndex;
+    this.tweener = new VelocityTweener(Date.now());
     this.carousel = carousel;
 
     if (this.config.includeStyle) {
@@ -380,6 +383,15 @@ export default class AyCarousel {
   }
 
   translate(x : number, length : number, fn? : string, updateIndex : boolean = true) {
+    this.targetTranslate = x;
+    if (! this.tweener.animating) {
+      requestAnimationFrame(this.updateTweener.bind(this));
+    }
+    this.tweener.to(this, 'currentTranslate', x, length);
+
+    updateIndex = updateIndex || ! updateIndex;
+    fn = fn || '';
+    /*
     this.currentTranslate = x;
     this.carousel.style['transition'] = 'transform';
     this.carousel.style['transitionDuration'] = `${length}ms`;
@@ -393,6 +405,14 @@ export default class AyCarousel {
       this.setIndex(this.calculateIndex());
     }
     window.requestAnimationFrame(_ => this.rescale());
+    */
+  }
+
+  updateTweener() {
+    this.tweener.update(Date.now());
+    if (this.tweener.animating) {
+      requestAnimationFrame(this.updateTweener.bind(this));
+    }
   }
 
   proportionVisible(index : number) : number {
@@ -466,6 +486,15 @@ export default class AyCarousel {
     if (includingContainer && this.dotContainer && this.dotContainer.parentElement) {
        this.dotContainer.parentElement.removeChild(this.dotContainer);
     }
+  }
+
+  get currentTranslate() : number {
+    return this._currentTranslate;
+  }
+
+  set currentTranslate(value : number) {
+    this._currentTranslate = value;
+    this.carousel.style['transform'] = `translate3d(${value}px,0px,0px)`;
   }
 
   setupConfig(config?) {
