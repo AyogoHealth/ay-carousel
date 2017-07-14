@@ -35,6 +35,7 @@ export default class AyCarousel {
   currentTranslate : number = 0;
   lastTranslate : number = 0;
   currentlyDragging : boolean = false;
+  passedMoveThreshold : boolean = false;
   callbacks : any = {};
   cards : HTMLElement[];
   cardWidth : number;
@@ -206,6 +207,7 @@ export default class AyCarousel {
       return;
     }
     this.currentlyDragging = true;
+    this.passedMoveThreshold = false;
 
     const touches =  e.touches ? e.touches[0] : e;
     const {pageX, pageY} = touches;
@@ -299,6 +301,12 @@ export default class AyCarousel {
 
     // Don't do anything if the move doesn't exceed our threshold
     if (this.totalMove.x < this.config.moveThreshold && this.totalMove.y < this.config.moveThreshold) {
+      return;
+    }
+    if (! this.passedMoveThreshold) {
+      this.passedMoveThreshold = true;
+      this.startX = pageX;
+      this.startY = pageY;
       return;
     }
 
