@@ -23,13 +23,14 @@ const CAROUSEL_STYLES = `
   }
 `;
 export default class AyCarousel {
-    constructor(carousel, config, initialIndex = 0) {
+    constructor(carousel, config, initialIndex = 0, onIndexChange, onMove) {
         this.startX = 0;
         this.startY = 0;
         this.initialIndexSetOnce = false;
         this.currentTranslate = 0;
         this.lastTranslate = 0;
         this.currentlyDragging = false;
+        this.passedMoveThreshold = false;
         this.callbacks = {};
         this.index = 0;
         this.dots = [];
@@ -42,6 +43,12 @@ export default class AyCarousel {
         }
         this.config = this.setupConfig(config);
         this.initialIndex = initialIndex;
+        if (onIndexChange) {
+            this.onIndexChange = onIndexChange;
+        }
+        if (onMove) {
+            this.onMove = onMove;
+        }
         this.carousel = carousel;
         if (this.config.includeStyle) {
             if (!AyCarousel.documentStyleAdded) {
@@ -162,6 +169,7 @@ export default class AyCarousel {
             return;
         }
         this.currentlyDragging = true;
+        this.passedMoveThreshold = false;
         const touches = e.touches ? e.touches[0] : e;
         const { pageX, pageY } = touches;
         this.lastTranslate = this.currentTranslate;
@@ -231,6 +239,12 @@ export default class AyCarousel {
         if (this.totalMove.x < this.config.moveThreshold && this.totalMove.y < this.config.moveThreshold) {
             return;
         }
+        if (!this.passedMoveThreshold) {
+            this.passedMoveThreshold = true;
+            this.startX = pageX;
+            this.startY = pageY;
+            return;
+        }
         if (this.totalMove.x > this.totalMove.y) {
             e.preventDefault();
             this.translate(this.lastTranslate + move.x, 0);
@@ -261,6 +275,9 @@ export default class AyCarousel {
         if (oldIndex !== this.index && this.dots && this.dots[oldIndex] && this.dots[this.index]) {
             this.dots[oldIndex].className = '';
             this.dots[this.index].className = 'active';
+        }
+        if (oldIndex !== this.index) {
+            this.onIndexChange && this.onIndexChange({ index: this.index });
         }
     }
     snap(nextIndex, direction, instant) {
@@ -298,6 +315,7 @@ export default class AyCarousel {
         }
     }
     translate(x, length, fn, updateIndex = true) {
+        let oldTranslate = this.currentTranslate;
         this.currentTranslate = x;
         this.carousel.style['transition'] = 'transform';
         this.carousel.style['transitionDuration'] = `${length}ms`;
@@ -309,6 +327,9 @@ export default class AyCarousel {
             this.setIndex(this.calculateIndex());
         }
         window.requestAnimationFrame(_ => this.rescale());
+        if (oldTranslate !== this.currentTranslate) {
+            this.onMove && this.onMove({ proportion: -this.currentTranslate / ((this.cards.length - 1) * this.cardWidth), duration: length });
+        }
     }
     proportionVisible(index) {
         let prop = 1 - Math.abs((this.calcOS(index) - this.currentTranslate) / this.cardWidth);

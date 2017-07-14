@@ -8,11 +8,13 @@ angular.module(modName, [])
         restrict: 'E',
         scope: {
             config: '=',
-            initialIndex: '@'
+            initialIndex: '@',
+            onIndexChange: '&',
+            onMove: '&'
         },
         link: function ($scope, $element) {
             let el = $element[0];
-            let carousel = new AyCarousel(el, $scope.config, $scope.initialIndex);
+            let carousel = new AyCarousel(el, $scope.config, $scope.initialIndex, $scope.onIndexChange, $scope.onMove);
             let mutationObserver = new MutationObserver(() => {
                 carousel.updateItems();
             });

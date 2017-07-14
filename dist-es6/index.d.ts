@@ -7,6 +7,7 @@ export default class AyCarousel {
     currentTranslate: number;
     lastTranslate: number;
     currentlyDragging: boolean;
+    passedMoveThreshold: boolean;
     callbacks: any;
     cards: HTMLElement[];
     cardWidth: number;
@@ -26,7 +27,9 @@ export default class AyCarousel {
     carouselParent: any;
     resizeTimeoutId: number;
     destroyed: boolean;
-    constructor(carousel: HTMLElement, config?: any, initialIndex?: number);
+    onIndexChange: Function;
+    onMove: Function;
+    constructor(carousel: HTMLElement, config?: any, initialIndex?: number, onIndexChange?: Function, onMove?: Function);
     updateItems(): void;
     handleResize(snap?: boolean): void;
     followUpResize(snap?: boolean): void;
