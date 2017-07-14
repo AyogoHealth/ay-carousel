@@ -54,14 +54,22 @@ export default class AyCarousel {
   carouselParent;
   resizeTimeoutId : number;
   destroyed : boolean = false;
+  onIndexChange : Function;
+  onMove : Function;
 
-  constructor(carousel : HTMLElement, config?, initialIndex=0) {
+  constructor(carousel : HTMLElement, config?, initialIndex=0, onIndexChange? : Function, onMove? : Function) {
     if (! carousel) {
       return;
     }
 
     this.config = this.setupConfig(config);
     this.initialIndex = initialIndex;
+    if (onIndexChange) {
+      this.onIndexChange = onIndexChange;
+    }
+    if (onMove) {
+      this.onMove = onMove;
+    }
     this.carousel = carousel;
 
     if (this.config.includeStyle) {
@@ -336,6 +344,10 @@ export default class AyCarousel {
       this.dots[oldIndex].className = '';
       this.dots[this.index].className = 'active';
     }
+
+    if (oldIndex !== this.index) {
+      this.onIndexChange && this.onIndexChange({ index: this.index });
+    }
   }
 
   snap(nextIndex? : number, direction? : string, instant? : boolean) {
@@ -380,6 +392,7 @@ export default class AyCarousel {
   }
 
   translate(x : number, length : number, fn? : string, updateIndex : boolean = true) {
+    let oldTranslate = this.currentTranslate;
     this.currentTranslate = x;
     this.carousel.style['transition'] = 'transform';
     this.carousel.style['transitionDuration'] = `${length}ms`;
@@ -393,6 +406,9 @@ export default class AyCarousel {
       this.setIndex(this.calculateIndex());
     }
     window.requestAnimationFrame(_ => this.rescale());
+    if (oldTranslate !== this.currentTranslate) {
+      this.onMove && this.onMove({ proportion: -this.currentTranslate / ((this.cards.length-1)*this.cardWidth), duration: length });
+    }
   }
 
   proportionVisible(index : number) : number {
