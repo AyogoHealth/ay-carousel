@@ -13,7 +13,7 @@ angular.module(modName, [])
       config: '=',
       initialIndex: '@'
     },
-    link: function($scope, $element, attrs) {
+    link: function($scope, $element) {
       let el = $element[0] as HTMLElement;
       let carousel = new AyCarousel(el, $scope.config, $scope.initialIndex);
 
