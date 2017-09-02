@@ -321,7 +321,8 @@ export default class AyCarousel {
   }
 
   calculateIndex() {
-    let index = Math.round(-this.currentTranslate / this.cardWidth);
+    let edgeToCardDist = (this.carouselParent.width - this.cardWidth) / 2;
+    let index = Math.round((edgeToCardDist - this.currentTranslate) / this.cardWidth);
     return Math.max(0, Math.min(this.cards.length-1, (index)));
   }
 
@@ -449,7 +450,6 @@ export default class AyCarousel {
 
     // Translating to the left of the desired card, minus our desired edge dist
     // Multiplied by -1 because we are translating to the right
-    //let centeredPosition = (this.cardWidth*i - edgeToCardDist + this.carouselParent.left) * -1;
     let centeredPosition = (this.cardWidth*i - edgeToCardDist) * -1;
 
     if (! this.config.edgeShifting) {
