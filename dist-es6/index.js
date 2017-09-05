@@ -252,7 +252,8 @@ export default class AyCarousel {
         }
     }
     calculateIndex() {
-        let index = Math.round(-this.currentTranslate / this.cardWidth);
+        let edgeToCardDist = (this.carouselParent.width - this.cardWidth) / 2;
+        let index = Math.round((edgeToCardDist - this.currentTranslate) / this.cardWidth);
         return Math.max(0, Math.min(this.cards.length - 1, (index)));
     }
     onDotClick(e) {
@@ -351,6 +352,9 @@ export default class AyCarousel {
     calcOS(i) {
         const edgeToCardDist = (this.carouselParent.width - this.cardWidth) / 2;
         let centeredPosition = (this.cardWidth * i - edgeToCardDist) * -1;
+        if (!this.config.edgeShifting) {
+            return centeredPosition;
+        }
         if (this.cards.length <= 1) {
             return centeredPosition;
         }
@@ -402,6 +406,7 @@ export default class AyCarousel {
             moveThreshold: 10,
             edgeBounceProportion: 0.25,
             cardFilterClass: '',
+            edgeShifting: true,
             enableDots: true,
             includeStyle: false
         };

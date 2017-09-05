@@ -265,7 +265,8 @@ var AyCarousel = (function () {
         }
     };
     AyCarousel.prototype.calculateIndex = function () {
-        var index = Math.round(-this.currentTranslate / this.cardWidth);
+        var edgeToCardDist = (this.carouselParent.width - this.cardWidth) / 2;
+        var index = Math.round((edgeToCardDist - this.currentTranslate) / this.cardWidth);
         return Math.max(0, Math.min(this.cards.length - 1, (index)));
     };
     AyCarousel.prototype.onDotClick = function (e) {
@@ -367,6 +368,9 @@ var AyCarousel = (function () {
     AyCarousel.prototype.calcOS = function (i) {
         var edgeToCardDist = (this.carouselParent.width - this.cardWidth) / 2;
         var centeredPosition = (this.cardWidth * i - edgeToCardDist) * -1;
+        if (!this.config.edgeShifting) {
+            return centeredPosition;
+        }
         if (this.cards.length <= 1) {
             return centeredPosition;
         }
@@ -419,6 +423,7 @@ var AyCarousel = (function () {
             moveThreshold: 10,
             edgeBounceProportion: 0.25,
             cardFilterClass: '',
+            edgeShifting: true,
             enableDots: true,
             includeStyle: false
         };
