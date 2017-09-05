@@ -15,7 +15,7 @@ angular.module(modName, [])
       onIndexChange: '&',
       onMove: '&'
     },
-    link: function($scope, $element) {
+    link: function($scope: any, $element) {
       let el = $element[0] as HTMLElement;
       let carousel = new AyCarousel(el, $scope.config, $scope.initialIndex, $scope.onIndexChange, $scope.onMove);
 
