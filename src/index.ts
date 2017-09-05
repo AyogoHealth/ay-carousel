@@ -90,7 +90,7 @@ export default class AyCarousel {
         }
         AyCarousel.documentStyleAdded = true;
       }
-      
+
       this.carousel.setAttribute('style',  `position: relative; width: 100%; display: flex; align-items: stretch;`);
     }
 
@@ -118,7 +118,7 @@ export default class AyCarousel {
     this.carousel.addEventListener('transitionend', this.callbacks.onTransitionEnd);
     this.carousel.addEventListener('click', this.callbacks.onClick, true);
     window.addEventListener('resize', this.callbacks.onWindowResize);
-    
+
     this.updateItems();
   }
 
@@ -171,10 +171,10 @@ export default class AyCarousel {
     this.followUpResize(snap);
     this.resizeTimeoutId = setTimeout(this.callbacks.onResizeFollowUp, 150, snap);
   }
-  
+
   followUpResize(snap : boolean = true): void {
     this.resizeTimeoutId = 0;
-    
+
     let carouselParent = this.carousel.parentElement;
 
     if (carouselParent) {
@@ -236,14 +236,14 @@ export default class AyCarousel {
 
     this.carousel.addEventListener('mousemove', this.callbacks.onDragMove);
     this.carousel.addEventListener('touchmove', this.callbacks.onDragMove);
-    
+
     this.carousel.addEventListener('touchend', this.callbacks.onDragEnd);
     this.carousel.addEventListener('mouseup', this.callbacks.onDragEnd);
     this.carousel.addEventListener('mouseleave', this.callbacks.onDragEnd);
   }
 
   calcVelocity() {
-    // Calculations from: 
+    // Calculations from:
     // https://ariya.io/2013/11/javascript-kinetic-scrolling-part-2
 
     const now = Date.now();
@@ -321,7 +321,8 @@ export default class AyCarousel {
   }
 
   calculateIndex() {
-    let index = Math.round(-this.currentTranslate / this.cardWidth);
+    let edgeToCardDist = (this.carouselParent.width - this.cardWidth) / 2;
+    let index = Math.round((edgeToCardDist - this.currentTranslate) / this.cardWidth);
     return Math.max(0, Math.min(this.cards.length-1, (index)));
   }
 
@@ -343,7 +344,7 @@ export default class AyCarousel {
 
   setIndex(index: number) {
     const oldIndex = this.index;
-    
+
     // Don't let index go outside bounds
     this.index = Math.max(Math.min(index, this.cards.length-1), 0);
 
@@ -383,7 +384,7 @@ export default class AyCarousel {
 
     this.carousel.removeEventListener('mousemove', this.callbacks.onDragMove);
     this.carousel.removeEventListener('touchmove', this.callbacks.onDragMove);
-    
+
     this.carousel.removeEventListener('touchend',this.callbacks.onDragEnd);
     this.carousel.removeEventListener('mouseup', this.callbacks.onDragEnd);
     this.carousel.removeEventListener('mouseleave', this.callbacks.onDragEnd);
@@ -432,7 +433,7 @@ export default class AyCarousel {
     // Rescale current card and 2 cards in either direction
     const from = Math.max(this.index-2 ,0);
     const to = Math.min(this.index+2, this.cards.length-1);
- 
+
     for(let i = from; i<=to; i++) {
       const scaler = Math.min(Math.max(this.proportionVisible(i)+0.25, this.config.minCardScale), 1);
 
@@ -449,8 +450,11 @@ export default class AyCarousel {
 
     // Translating to the left of the desired card, minus our desired edge dist
     // Multiplied by -1 because we are translating to the right
-    //let centeredPosition = (this.cardWidth*i - edgeToCardDist + this.carouselParent.left) * -1;
     let centeredPosition = (this.cardWidth*i - edgeToCardDist) * -1;
+
+    if (! this.config.edgeShifting) {
+      return centeredPosition;
+    }
 
     if (this.cards.length <= 1) {             //If there's only one item, center it
       return centeredPosition;
@@ -503,6 +507,7 @@ export default class AyCarousel {
       moveThreshold: 10, // Min accumulative x + y distance travelled by pointer before carousel will move and click events are cancelled
       edgeBounceProportion: 0.25, // How far beyond the scroll limits the carousel can travel with momentum before snapping (proportion of card width)
       cardFilterClass: '', // If non-falsey, only carousel children with a class matching the supplied value will be itemised as cards
+      edgeShifting: true, // Edge shifting aligns the first and last carousel items to the left and right edge of the parent element, but it's not always wanted. Setting this false centers every item.
       enableDots: true,
       includeStyle: false
     };

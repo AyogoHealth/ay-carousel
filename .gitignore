@@ -12,6 +12,7 @@
 *.swp
 Gemfile.lock
 npm-debug.log
+package-lock.json
 coverage
 demo/generated/*
 demo/assets/icons.svg
