@@ -58,13 +58,13 @@ export default class AyCarousel {
   onIndexChange : Function;
   onMove : Function;
 
-  constructor(carousel : HTMLElement, config?, initialIndex=0, onIndexChange? : Function, onMove? : Function) {
+  constructor(carousel : HTMLElement, config?, onIndexChange? : Function, onMove? : Function) {
     if (! carousel) {
       return;
     }
 
     this.config = this.setupConfig(config);
-    this.initialIndex = initialIndex;
+    this.initialIndex = config.initialIndex;
     if (onIndexChange) {
       this.onIndexChange = onIndexChange;
     }
@@ -509,7 +509,8 @@ export default class AyCarousel {
       cardFilterClass: '', // If non-falsey, only carousel children with a class matching the supplied value will be itemised as cards
       edgeShifting: true, // Edge shifting aligns the first and last carousel items to the left and right edge of the parent element, but it's not always wanted. Setting this false centers every item.
       enableDots: true,
-      includeStyle: false
+      includeStyle: false,
+      initialIndex: 0
     };
     return assign({}, defaultConfig, config);
   }
