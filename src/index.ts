@@ -40,6 +40,7 @@ export default class AyCarousel {
   cards : HTMLElement[];
   cardWidth : number;
   index : number = 0;
+  startIndex: number;
   carousel : HTMLElement;
   dotContainer : HTMLUListElement;
   dots : HTMLLIElement[] = [];
@@ -209,6 +210,8 @@ export default class AyCarousel {
     this.currentlyDragging = true;
     this.passedMoveThreshold = false;
 
+    this.startIndex = this.index;
+
     const touches =  e.touches ? e.touches[0] : e;
     const {pageX, pageY} = touches;
 
@@ -269,7 +272,9 @@ export default class AyCarousel {
 
       const delta = -this.amplitude * Math.exp(-elapsed / (this.config.decelerationRate));
 
-      if(delta > stopPoint || delta < -stopPoint) {
+      if(this.startIndex !== this.index && this.config.limitMomentumToOnePage) {
+        this.snap(this.index);
+      } else if(delta > stopPoint || delta < -stopPoint) {
         const outOfBoundsLeft = this.target+delta > (this.config.edgeBounceProportion * this.cardWidth);
         const outOfBoundsRight = this.target+delta < (this.calcOS(this.cards.length-1) - (this.config.edgeBounceProportion * this.cardWidth));
         if(outOfBoundsLeft || outOfBoundsRight) {
@@ -394,6 +399,7 @@ export default class AyCarousel {
       this.amplitude = (1-this.config.heaviness) * this.velocity;
       this.target = Math.round(this.currentTranslate + this.amplitude);
 
+      this.index = this.calculateIndex();
       window.requestAnimationFrame(_ => this.momentumScroll(this.config.momentumSnapVelocityThreshold));
     } else {
       this.snap(this.index);
@@ -411,7 +417,7 @@ export default class AyCarousel {
     }
     if(length === 0 && updateIndex) {
       // We only want to calculate the index if we're responding to a user drag
-      // i.e. a 0 length transition
+      // i.e. a 0 length transition      
       this.setIndex(this.calculateIndex());
     }
     window.requestAnimationFrame(_ => this.rescale());
@@ -509,7 +515,8 @@ export default class AyCarousel {
       cardFilterClass: '', // If non-falsey, only carousel children with a class matching the supplied value will be itemised as cards
       edgeShifting: true, // Edge shifting aligns the first and last carousel items to the left and right edge of the parent element, but it's not always wanted. Setting this false centers every item.
       enableDots: true,
-      includeStyle: false
+      includeStyle: false,
+      limitMomentumToOnePage: false
     };
     return assign({}, defaultConfig, config);
   }
