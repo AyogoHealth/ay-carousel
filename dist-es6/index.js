@@ -170,6 +170,7 @@ export default class AyCarousel {
         }
         this.currentlyDragging = true;
         this.passedMoveThreshold = false;
+        this.startIndex = this.index;
         const touches = e.touches ? e.touches[0] : e;
         const { pageX, pageY } = touches;
         this.lastTranslate = this.currentTranslate;
@@ -209,7 +210,10 @@ export default class AyCarousel {
         if (this.amplitude) {
             const elapsed = Date.now() - this.timestamp;
             const delta = -this.amplitude * Math.exp(-elapsed / (this.config.decelerationRate));
-            if (delta > stopPoint || delta < -stopPoint) {
+            if (this.startIndex !== this.index && this.config.limitMomentumToOnePage) {
+                this.snap(this.index);
+            }
+            else if (delta > stopPoint || delta < -stopPoint) {
                 const outOfBoundsLeft = this.target + delta > (this.config.edgeBounceProportion * this.cardWidth);
                 const outOfBoundsRight = this.target + delta < (this.calcOS(this.cards.length - 1) - (this.config.edgeBounceProportion * this.cardWidth));
                 if (outOfBoundsLeft || outOfBoundsRight) {
@@ -309,6 +313,7 @@ export default class AyCarousel {
         if (this.velocity > 0.5 || this.velocity < -0.5) {
             this.amplitude = (1 - this.config.heaviness) * this.velocity;
             this.target = Math.round(this.currentTranslate + this.amplitude);
+            this.index = this.calculateIndex();
             window.requestAnimationFrame(_ => this.momentumScroll(this.config.momentumSnapVelocityThreshold));
         }
         else {
@@ -408,7 +413,8 @@ export default class AyCarousel {
             cardFilterClass: '',
             edgeShifting: true,
             enableDots: true,
-            includeStyle: false
+            includeStyle: false,
+            limitMomentumToOnePage: false
         };
         return assign({}, defaultConfig, config);
     }

@@ -12,6 +12,7 @@ export default class AyCarousel {
     cards: HTMLElement[];
     cardWidth: number;
     index: number;
+    startIndex: number;
     carousel: HTMLElement;
     dotContainer: HTMLUListElement;
     dots: HTMLLIElement[];

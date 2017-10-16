@@ -182,6 +182,7 @@ var AyCarousel = (function () {
         }
         this.currentlyDragging = true;
         this.passedMoveThreshold = false;
+        this.startIndex = this.index;
         var touches = e.touches ? e.touches[0] : e;
         var pageX = touches.pageX, pageY = touches.pageY;
         this.lastTranslate = this.currentTranslate;
@@ -222,7 +223,10 @@ var AyCarousel = (function () {
         if (this.amplitude) {
             var elapsed = Date.now() - this.timestamp;
             var delta = -this.amplitude * Math.exp(-elapsed / (this.config.decelerationRate));
-            if (delta > stopPoint || delta < -stopPoint) {
+            if (this.startIndex !== this.index && this.config.limitMomentumToOnePage) {
+                this.snap(this.index);
+            }
+            else if (delta > stopPoint || delta < -stopPoint) {
                 var outOfBoundsLeft = this.target + delta > (this.config.edgeBounceProportion * this.cardWidth);
                 var outOfBoundsRight = this.target + delta < (this.calcOS(this.cards.length - 1) - (this.config.edgeBounceProportion * this.cardWidth));
                 if (outOfBoundsLeft || outOfBoundsRight) {
@@ -323,6 +327,7 @@ var AyCarousel = (function () {
         if (this.velocity > 0.5 || this.velocity < -0.5) {
             this.amplitude = (1 - this.config.heaviness) * this.velocity;
             this.target = Math.round(this.currentTranslate + this.amplitude);
+            this.index = this.calculateIndex();
             window.requestAnimationFrame(function (_) { return _this.momentumScroll(_this.config.momentumSnapVelocityThreshold); });
         }
         else {
@@ -425,13 +430,14 @@ var AyCarousel = (function () {
             cardFilterClass: '',
             edgeShifting: true,
             enableDots: true,
-            includeStyle: false
+            includeStyle: false,
+            limitMomentumToOnePage: false
         };
         return assign({}, defaultConfig, config);
     };
-    AyCarousel.documentStyleAdded = false;
     return AyCarousel;
 }());
+AyCarousel.documentStyleAdded = false;
 
 var modName = 'ayCarousel';
 angular.module(modName, [])
