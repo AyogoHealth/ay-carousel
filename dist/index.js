@@ -224,7 +224,8 @@ var AyCarousel = (function () {
             var elapsed = Date.now() - this.timestamp;
             var delta = -this.amplitude * Math.exp(-elapsed / (this.config.decelerationRate));
             if (this.startIndex !== this.index && this.config.limitMomentumToOnePage) {
-                this.snap(this.index);
+                var moveDiff = Math.max(-1, Math.min(1, this.index - this.startIndex));
+                this.snap(this.startIndex + moveDiff);
             }
             else if (delta > stopPoint || delta < -stopPoint) {
                 var outOfBoundsLeft = this.target + delta > (this.config.edgeBounceProportion * this.cardWidth);

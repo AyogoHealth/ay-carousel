@@ -211,7 +211,8 @@ export default class AyCarousel {
             const elapsed = Date.now() - this.timestamp;
             const delta = -this.amplitude * Math.exp(-elapsed / (this.config.decelerationRate));
             if (this.startIndex !== this.index && this.config.limitMomentumToOnePage) {
-                this.snap(this.index);
+                const moveDiff = Math.max(-1, Math.min(1, this.index - this.startIndex));
+                this.snap(this.startIndex + moveDiff);
             }
             else if (delta > stopPoint || delta < -stopPoint) {
                 const outOfBoundsLeft = this.target + delta > (this.config.edgeBounceProportion * this.cardWidth);
