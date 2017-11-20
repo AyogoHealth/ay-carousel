@@ -4,9 +4,11 @@ import cleanup from 'rollup-plugin-cleanup';
 import sourcemaps from 'rollup-plugin-sourcemaps';
 
 export default {
-    format: 'umd',
     banner: '/*! Copyright 2017 Ayogo Health Inc. */',
-    sourceMap: true,
+    sourcemap: true,
+    output: {
+        format: 'umd',
+    },
     globals: {
         'angular': 'angular',
         'utilities': 'utilities'
