@@ -10,7 +10,6 @@ var assign = function (target) {
     for (var _i = 1; _i < arguments.length; _i++) {
         args[_i - 1] = arguments[_i];
     }
-    args;
     if (target == null) {
         throw new TypeError('Cannot convert undefined or null to object');
     }
@@ -340,9 +339,15 @@ var AyCarousel = (function () {
         if (updateIndex === void 0) { updateIndex = true; }
         var oldTranslate = this.currentTranslate;
         this.currentTranslate = x;
-        this.carousel.style['transition'] = 'transform';
+        if (!('transform' in this.carousel.style)) {
+            this.carousel.style['transition'] = '-webkit-transform';
+            this.carousel.style['webkitTransform'] = "translate3d(" + x + "px,0px,0px)";
+        }
+        else {
+            this.carousel.style['transition'] = 'transform';
+            this.carousel.style['transform'] = "translate3d(" + x + "px,0px,0px)";
+        }
         this.carousel.style['transitionDuration'] = length + "ms";
-        this.carousel.style['transform'] = "translate3d(" + x + "px,0px,0px)";
         if (fn) {
             this.carousel.style['transitionTimingFunction'] = fn;
         }
@@ -436,9 +441,9 @@ var AyCarousel = (function () {
         };
         return assign({}, defaultConfig, config);
     };
+    AyCarousel.documentStyleAdded = false;
     return AyCarousel;
 }());
-AyCarousel.documentStyleAdded = false;
 
 var modName = 'ayCarousel';
 angular.module(modName, [])

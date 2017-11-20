@@ -324,9 +324,15 @@ export default class AyCarousel {
     translate(x, length, fn, updateIndex = true) {
         let oldTranslate = this.currentTranslate;
         this.currentTranslate = x;
-        this.carousel.style['transition'] = 'transform';
+        if (!('transform' in this.carousel.style)) {
+            this.carousel.style['transition'] = '-webkit-transform';
+            this.carousel.style['webkitTransform'] = `translate3d(${x}px,0px,0px)`;
+        }
+        else {
+            this.carousel.style['transition'] = 'transform';
+            this.carousel.style['transform'] = `translate3d(${x}px,0px,0px)`;
+        }
         this.carousel.style['transitionDuration'] = `${length}ms`;
-        this.carousel.style['transform'] = `translate3d(${x}px,0px,0px)`;
         if (fn) {
             this.carousel.style['transitionTimingFunction'] = fn;
         }
