@@ -411,15 +411,22 @@ export default class AyCarousel {
   translate(x : number, length : number, fn? : string, updateIndex : boolean = true) {
     let oldTranslate = this.currentTranslate;
     this.currentTranslate = x;
-    this.carousel.style['transition'] = 'transform';
+
+    if (!('transform' in this.carousel.style)) {
+      this.carousel.style['transition'] = '-webkit-transform';
+      this.carousel.style['webkitTransform'] = `translate3d(${x}px,0px,0px)`;
+    } else {
+      this.carousel.style['transition'] = 'transform';
+      this.carousel.style['transform'] = `translate3d(${x}px,0px,0px)`;
+    }
     this.carousel.style['transitionDuration'] = `${length}ms`;
-    this.carousel.style['transform'] = `translate3d(${x}px,0px,0px)`;
+
     if(fn) {
       this.carousel.style['transitionTimingFunction'] = fn;
     }
     if(length === 0 && updateIndex) {
       // We only want to calculate the index if we're responding to a user drag
-      // i.e. a 0 length transition      
+      // i.e. a 0 length transition
       this.setIndex(this.calculateIndex());
     }
     window.requestAnimationFrame(_ => this.rescale());
