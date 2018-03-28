@@ -8,6 +8,7 @@ angular.module(modName, [])
         restrict: 'E',
         scope: {
             config: '=',
+            index: '<?',
             initialIndex: '@',
             onIndexChange: '&',
             onMove: '&'
@@ -19,6 +20,11 @@ angular.module(modName, [])
                 carousel.updateItems();
             });
             mutationObserver.observe(el, { childList: true });
+            $scope.$watch('index', (newVal) => {
+                let index = parseInt(newVal, 10);
+                carousel.setIndex(index);
+                carousel.snap(index);
+            });
             $scope.$on('$destroy', () => {
                 mutationObserver.disconnect();
                 carousel.cleanUp();
