@@ -465,9 +465,11 @@ angular.module(modName, [])
             });
             mutationObserver.observe(el, { childList: true });
             $scope.$watch('index', function (newVal) {
-                var index = parseInt(newVal, 10);
-                carousel.setIndex(index);
-                carousel.snap(index);
+                if (newVal) {
+                    var index = parseInt(newVal, 10);
+                    carousel.setIndex(index);
+                    carousel.snap(index);
+                }
             });
             $scope.$on('$destroy', function () {
                 mutationObserver.disconnect();
