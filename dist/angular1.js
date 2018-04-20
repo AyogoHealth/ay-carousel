@@ -465,8 +465,8 @@ angular.module(modName, [])
             });
             mutationObserver.observe(el, { childList: true });
             $scope.$watch('index', function (newVal) {
-                if (newVal) {
-                    var index = parseInt(newVal, 10);
+                var index = parseInt(newVal, 10);
+                if (!isNaN(index)) {
                     carousel.setIndex(index);
                     carousel.snap(index);
                 }
