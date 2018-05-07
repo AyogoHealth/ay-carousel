@@ -14,23 +14,45 @@ angular.module(modName, [])
       index: '<?',
       initialIndex: '@',
       onIndexChange: '&',
-      onMove: '&'
+      onMove: '&',
+      disable: '<?'
     },
     link: function($scope: any, $element) {
       let el = $element[0] as HTMLElement;
-      let carousel = new AyCarousel(el, $scope.config, $scope.initialIndex, $scope.onIndexChange, $scope.onMove);
+      let carousel, mutationObserver;
 
-      let mutationObserver = new MutationObserver(() => {
-        carousel.updateItems();
-      });
-      mutationObserver.observe(el, { childList: true });
+      if(!$scope.disable) {
+        carousel = new AyCarousel(el, $scope.config, $scope.initialIndex, $scope.onIndexChange, $scope.onMove);
+
+        mutationObserver = new MutationObserver(() => {
+          carousel.updateItems();
+        });
+        mutationObserver.observe(el, { childList: true });
+      }
 
       $scope.$watch('index', (newVal) => {
         let index = parseInt(newVal, 10);
 
         if(!isNaN(index)) {
-          carousel.setIndex(index);
-          carousel.snap(index);
+          if(carousel) {
+            carousel.setIndex(index);
+            carousel.snap(index);
+          }
+        }
+      });
+
+      $scope.$watch('disable', newVal => {
+        if(!newVal) {
+          carousel = new AyCarousel(el, $scope.config, $scope.initialIndex, $scope.onIndexChange, $scope.onMove);
+
+          mutationObserver = new MutationObserver(() => {
+            carousel.updateItems();
+          });
+          mutationObserver.observe(el, { childList: true });
+        } else if(carousel) {
+          carousel.snap(0);
+          carousel.cleanUp();
+          mutationObserver.disconnect();
         }
       });
 
