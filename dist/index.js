@@ -441,9 +441,9 @@ var AyCarousel = (function () {
         };
         return assign({}, defaultConfig, config);
     };
+    AyCarousel.documentStyleAdded = false;
     return AyCarousel;
 }());
-AyCarousel.documentStyleAdded = false;
 
 return AyCarousel;
 

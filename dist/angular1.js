@@ -441,9 +441,9 @@ var AyCarousel = (function () {
         };
         return assign({}, defaultConfig, config);
     };
+    AyCarousel.documentStyleAdded = false;
     return AyCarousel;
 }());
-AyCarousel.documentStyleAdded = false;
 
 var modName = 'ayCarousel';
 angular.module(modName, [])
@@ -492,7 +492,9 @@ angular.module(modName, [])
                 }
             });
             $scope.$on('$destroy', function () {
-                mutationObserver.disconnect();
+                if (mutationObserver) {
+                    mutationObserver.disconnect();
+                }
                 carousel.cleanUp();
             });
         }

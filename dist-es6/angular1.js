@@ -48,7 +48,9 @@ angular.module(modName, [])
                 }
             });
             $scope.$on('$destroy', () => {
-                mutationObserver.disconnect();
+                if (mutationObserver) {
+                    mutationObserver.disconnect();
+                }
                 carousel.cleanUp();
             });
         }
