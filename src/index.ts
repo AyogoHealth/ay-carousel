@@ -170,7 +170,7 @@ export default class AyCarousel {
       clearTimeout(this.resizeTimeoutId);
     }
     this.followUpResize(snap);
-    this.resizeTimeoutId = setTimeout(this.callbacks.onResizeFollowUp, 150, snap);
+    this.resizeTimeoutId = window.setTimeout(this.callbacks.onResizeFollowUp, 150, snap);
   }
 
   followUpResize(snap : boolean = true): void {
@@ -413,8 +413,8 @@ export default class AyCarousel {
     this.currentTranslate = x;
 
     if (!('transform' in this.carousel.style)) {
-      this.carousel.style['transition'] = '-webkit-transform';
-      this.carousel.style['webkitTransform'] = `translate3d(${x}px,0px,0px)`;
+      this.carousel.style!['transition'] = '-webkit-transform';
+      this.carousel.style!['webkitTransform'] = `translate3d(${x}px,0px,0px)`;
     } else {
       this.carousel.style['transition'] = 'transform';
       this.carousel.style['transform'] = `translate3d(${x}px,0px,0px)`;

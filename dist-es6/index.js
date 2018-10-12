@@ -137,7 +137,7 @@ export default class AyCarousel {
             clearTimeout(this.resizeTimeoutId);
         }
         this.followUpResize(snap);
-        this.resizeTimeoutId = setTimeout(this.callbacks.onResizeFollowUp, 150, snap);
+        this.resizeTimeoutId = window.setTimeout(this.callbacks.onResizeFollowUp, 150, snap);
     }
     followUpResize(snap = true) {
         this.resizeTimeoutId = 0;
