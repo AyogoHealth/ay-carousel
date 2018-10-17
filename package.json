@@ -1,6 +1,7 @@
 {
   "name": "@ayogohealth/ay-carousel",
   "copyright": "Copyright 2017 Ayogo Health Inc.",
+  "license": "MIT",
   "author": "Ayogo Health Inc. <info@ayogo.com>",
   "homepage": "http://ayogo.com",
   "version": "2.7.1",
