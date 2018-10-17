@@ -3,6 +3,13 @@
   "copyright": "Copyright 2017 Ayogo Health Inc.",
   "license": "MIT",
   "author": "Ayogo Health Inc. <info@ayogo.com>",
+  "contributors": [
+    "Adam Vernon <adam@akineticblog.com>",
+    "Darryl Pogue <darryl@dpogue.ca>",
+    "Raul Souza <raul.souza@ayogo.com>",
+    "Sam Evanuk <samevanuk@gmail.com>",
+    "Stacey Vachon <hello@staceyvachon.com>"
+  ],
   "homepage": "http://ayogo.com",
   "version": "2.7.1",
   "description": "Carousel Component",
