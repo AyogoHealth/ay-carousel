@@ -51,7 +51,9 @@ angular.module(modName, [])
                 if (mutationObserver) {
                     mutationObserver.disconnect();
                 }
-                carousel.cleanUp();
+                if (carousel) {
+                    carousel.cleanUp();
+                }
             });
         }
     };
