@@ -210,6 +210,8 @@ export default class AyCarousel {
     this.currentlyDragging = true;
     this.passedMoveThreshold = false;
 
+    this.carousel.style.setProperty('will-change', 'transform');
+
     this.startIndex = this.index;
 
     const touches =  e.touches ? e.touches[0] : e;
@@ -395,6 +397,8 @@ export default class AyCarousel {
     this.carousel.removeEventListener('touchend',this.callbacks.onDragEnd);
     this.carousel.removeEventListener('mouseup', this.callbacks.onDragEnd);
     this.carousel.removeEventListener('mouseleave', this.callbacks.onDragEnd);
+
+    this.carousel.style.removeProperty('will-change');
 
     window.clearInterval(this.velocityInterval);
     if(this.velocity > 0.5 || this.velocity < -0.5) {
