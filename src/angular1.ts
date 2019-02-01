@@ -41,15 +41,19 @@ angular.module(modName, [])
         }
       });
 
-      $scope.$watch('disable', newVal => {
-        if(!newVal) {
+      $scope.$watch('disable', (newVal, oldVal) => {
+        if (newVal === oldVal) {
+          return;
+        }
+
+        if (!newVal) {
           carousel = new AyCarousel(el, $scope.config, $scope.initialIndex, $scope.onIndexChange, $scope.onMove);
 
           mutationObserver = new MutationObserver(() => {
             carousel.updateItems();
           });
           mutationObserver.observe(el, { childList: true });
-        } else if(carousel) {
+        } else if (carousel) {
           carousel.snap(0);
           carousel.cleanUp();
           mutationObserver.disconnect();
