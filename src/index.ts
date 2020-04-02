@@ -57,9 +57,10 @@ export default class AyCarousel {
   resizeTimeoutId : number;
   destroyed : boolean = false;
   onIndexChange : Function;
+  finishedSwipe : Function;
   onMove : Function;
 
-  constructor(carousel : HTMLElement, config?, initialIndex=0, onIndexChange? : Function, onMove? : Function) {
+  constructor(carousel : HTMLElement, config?, initialIndex=0, onIndexChange? : Function, finishedSwipe? : Function, onMove? : Function) {
     if (! carousel) {
       return;
     }
@@ -69,6 +70,11 @@ export default class AyCarousel {
     if (onIndexChange) {
       this.onIndexChange = onIndexChange;
     }
+
+    if (finishedSwipe) {
+      this.finishedSwipe = finishedSwipe;
+    }
+
     if (onMove) {
       this.onMove = onMove;
     }
@@ -386,6 +392,8 @@ export default class AyCarousel {
     const duration = instant ? 200 : Math.floor(distance*1.25) + this.config.snapSpeedConstant;
 
     this.translate(nextOffset, duration, ease);
+
+    this.finishedSwipe && this.finishedSwipe({ index: this.index });
   }
 
   onDragEnd() {

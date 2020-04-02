@@ -14,6 +14,7 @@ angular.module(modName, [])
       index: '<?',
       initialIndex: '@',
       onIndexChange: '&',
+      finishedSwipe: '&',
       onMove: '&',
       disable: '<?'
     },
@@ -22,7 +23,7 @@ angular.module(modName, [])
       let carousel, mutationObserver;
 
       if(!$scope.disable) {
-        carousel = new AyCarousel(el, $scope.config, $scope.initialIndex, $scope.onIndexChange, $scope.onMove);
+        carousel = new AyCarousel(el, $scope.config, $scope.initialIndex, $scope.onIndexChange, $scope.finishedSwipe, $scope.onMove);
 
         mutationObserver = new MutationObserver(() => {
           carousel.updateItems();
@@ -47,7 +48,7 @@ angular.module(modName, [])
         }
 
         if (!newVal) {
-          carousel = new AyCarousel(el, $scope.config, $scope.initialIndex, $scope.onIndexChange, $scope.onMove);
+          carousel = new AyCarousel(el, $scope.config, $scope.initialIndex, $scope.onIndexChange, $scope.finishedSwipe, $scope.onMove);
 
           mutationObserver = new MutationObserver(() => {
             carousel.updateItems();
