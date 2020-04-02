@@ -29,8 +29,9 @@ export default class AyCarousel {
     resizeTimeoutId: number;
     destroyed: boolean;
     onIndexChange: Function;
+    finishedSwipe: Function;
     onMove: Function;
-    constructor(carousel: HTMLElement, config?: any, initialIndex?: number, onIndexChange?: Function, onMove?: Function);
+    constructor(carousel: HTMLElement, config?: any, initialIndex?: number, onIndexChange?: Function, finishedSwipe?: Function, onMove?: Function);
     updateItems(): void;
     handleResize(snap?: boolean): void;
     followUpResize(snap?: boolean): void;

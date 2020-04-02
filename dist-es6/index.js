@@ -23,7 +23,7 @@ const CAROUSEL_STYLES = `
   }
 `;
 export default class AyCarousel {
-    constructor(carousel, config, initialIndex = 0, onIndexChange, onMove) {
+    constructor(carousel, config, initialIndex = 0, onIndexChange, finishedSwipe, onMove) {
         this.startX = 0;
         this.startY = 0;
         this.initialIndexSetOnce = false;
@@ -45,6 +45,9 @@ export default class AyCarousel {
         this.initialIndex = initialIndex;
         if (onIndexChange) {
             this.onIndexChange = onIndexChange;
+        }
+        if (finishedSwipe) {
+            this.finishedSwipe = finishedSwipe;
         }
         if (onMove) {
             this.onMove = onMove;
@@ -170,6 +173,7 @@ export default class AyCarousel {
         }
         this.currentlyDragging = true;
         this.passedMoveThreshold = false;
+        this.carousel.style.setProperty('will-change', 'transform');
         this.startIndex = this.index;
         const touches = e.touches ? e.touches[0] : e;
         const { pageX, pageY } = touches;
@@ -302,6 +306,7 @@ export default class AyCarousel {
         const distance = Math.abs(this.currentTranslate - nextOffset);
         const duration = instant ? 200 : Math.floor(distance * 1.25) + this.config.snapSpeedConstant;
         this.translate(nextOffset, duration, ease);
+        this.finishedSwipe && this.finishedSwipe({ index: this.index });
     }
     onDragEnd() {
         this.currentlyDragging = false;
@@ -310,6 +315,7 @@ export default class AyCarousel {
         this.carousel.removeEventListener('touchend', this.callbacks.onDragEnd);
         this.carousel.removeEventListener('mouseup', this.callbacks.onDragEnd);
         this.carousel.removeEventListener('mouseleave', this.callbacks.onDragEnd);
+        this.carousel.style.removeProperty('will-change');
         window.clearInterval(this.velocityInterval);
         if (this.velocity > 0.5 || this.velocity < -0.5) {
             this.amplitude = (1 - this.config.heaviness) * this.velocity;
