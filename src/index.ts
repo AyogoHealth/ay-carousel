@@ -425,8 +425,8 @@ export default class AyCarousel {
     this.currentTranslate = x;
 
     if (!('transform' in this.carousel.style)) {
-      this.carousel.style!['transition'] = '-webkit-transform';
-      this.carousel.style!['webkitTransform'] = `translate3d(${x}px,0px,0px)`;
+      (this.carousel.style as any)['transition'] = '-webkit-transform';
+      (this.carousel.style as any)['webkitTransform'] = `translate3d(${x}px,0px,0px)`;
     } else {
       this.carousel.style['transition'] = 'transform';
       this.carousel.style['transform'] = `translate3d(${x}px,0px,0px)`;
